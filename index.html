@@ -2600,6 +2600,80 @@ class SyncManager {
 /* ============================================================
    本地文件挂载 - File System Access API 适配层
    ============================================================ */
+
+// ── 挂载信息持久化（独立 IndexedDB） ──
+// FileSystemDirectoryHandle 是结构化克隆兼容的，可存入 IndexedDB
+// 刷新后通过 queryPermission/requestPermission 恢复权限
+const _MOUNT_DB_NAME = 'QingSi_MountedFoldersDB';
+const _MOUNT_DB_VERSION = 1;
+const _MOUNT_STORE = 'folders';
+
+function _openMountDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(_MOUNT_DB_NAME, _MOUNT_DB_VERSION);
+    const timeout = setTimeout(() => reject(new Error('挂载数据库打开超时')), 5000);
+    req.onerror = () => { clearTimeout(timeout); reject(req.error); };
+    req.onsuccess = () => { clearTimeout(timeout); resolve(req.result); };
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(_MOUNT_STORE)) {
+        db.createObjectStore(_MOUNT_STORE, { keyPath: 'id' });
+      }
+    };
+  });
+}
+
+async function _saveMountToDB(mountPoint, mountName, dirHandle) {
+  try {
+    const db = await _openMountDB();
+    const tx = db.transaction(_MOUNT_STORE, 'readwrite');
+    const store = tx.objectStore(_MOUNT_STORE);
+    store.put({ id: mountPoint, name: mountName, handle: dirHandle, mountPoint });
+    await new Promise((resolve, reject) => {
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+    console.log('%c[青丝]%c 挂载信息已持久化: ' + mountName, 'color:#b08a4a;font-weight:bold', 'color:#7a8b6f');
+  } catch (e) {
+    console.warn('[青丝] 挂载信息持久化失败:', e);
+  }
+}
+
+async function _removeMountFromDB(mountPoint) {
+  try {
+    const db = await _openMountDB();
+    const tx = db.transaction(_MOUNT_STORE, 'readwrite');
+    const store = tx.objectStore(_MOUNT_STORE);
+    store.delete(mountPoint);
+    await new Promise((resolve, reject) => {
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+  } catch (e) {
+    console.warn('[青丝] 删除挂载记录失败:', e);
+  }
+}
+
+async function _loadMountsFromDB() {
+  try {
+    const db = await _openMountDB();
+    const tx = db.transaction(_MOUNT_STORE, 'readonly');
+    const store = tx.objectStore(_MOUNT_STORE);
+    const req = store.getAll();
+    const folders = await new Promise((resolve, reject) => {
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    });
+    db.close();
+    return folders;
+  } catch (e) {
+    console.warn('[青丝] 读取挂载记录失败:', e);
+    return [];
+  }
+}
+
 class MountedLocalFS {
   constructor(dirHandle, mountName) {
     this._handle = dirHandle;
@@ -2954,6 +3028,10 @@ class HybridFS {
     QingSi.sync?.broadcast('fs:mounted', { point: mountPoint, name: mountName });
     QingSi.cache?.invalidate('/');
     console.log('%c[青丝]%c 已挂载本地目录: ' + mountName + ' → ' + mountPoint, 'color:#b08a4a;font-weight:bold', 'color:#7a8b6f');
+
+    // 持久化挂载信息到 IndexedDB，刷新后可恢复
+    await _saveMountToDB(mountPoint, mountName, dirHandle);
+
     return mountPoint;
   }
 
@@ -2971,6 +3049,9 @@ class HybridFS {
     } catch (e) {
       console.warn('[青丝] 挂载点节点清理失败:', e);
     }
+
+    // 从持久化数据库中删除挂载记录
+    await _removeMountFromDB(mountPoint);
 
     QingSi.sync?.broadcast('fs:unmounted', { point: mountPoint });
     QingSi.cache?.invalidate('/');
@@ -3049,6 +3130,79 @@ class HybridFS {
     }
 
     await this._repairInconsistencies();
+
+    // ── 恢复上次持久化的本地文件夹挂载 ──
+    await this._restoreMountedFolders();
+  }
+
+  /**
+   * 从 IndexedDB 恢复之前持久化的本地文件夹挂载
+   * 采用三级权限恢复策略（参考 JISHENG OS）：
+   * 1. queryPermission（静默检查）
+   * 2. requestPermission（交互请求）
+   * 3. 标记 disconnected（延迟恢复）
+   */
+  async _restoreMountedFolders() {
+    if (!HybridFS.isFileSystemAccessSupported()) return;
+
+    try {
+      const folders = await _loadMountsFromDB();
+      if (!folders || folders.length === 0) return;
+
+      console.log('%c[青丝]%c 发现 ' + folders.length + ' 个持久化挂载记录，正在恢复...', 'color:#b08a4a;font-weight:bold', 'color:#7a8b6f');
+
+      for (const folder of folders) {
+        try {
+          const { handle, name, mountPoint } = folder;
+          if (!handle || typeof handle.queryPermission !== 'function') {
+            console.warn('[青丝] 挂载记录 handle 无效，跳过:', name);
+            await _removeMountFromDB(mountPoint);
+            continue;
+          }
+
+          // 第一步：静默查询权限
+          const perm = await handle.queryPermission({ mode: 'readwrite' });
+          if (perm === 'granted') {
+            // 权限有效，直接恢复挂载
+            const localFS = new MountedLocalFS(handle, name);
+            this._mounts.set(mountPoint, localFS);
+            console.log('%c[青丝]%c 自动恢复挂载: ' + name, 'color:#b08a4a;font-weight:bold', 'color:#7a8b6f');
+            continue;
+          }
+
+          // 第二步：尝试请求权限（可能弹出权限提示）
+          try {
+            const reqPerm = await handle.requestPermission({ mode: 'readwrite' });
+            if (reqPerm === 'granted') {
+              const localFS = new MountedLocalFS(handle, name);
+              this._mounts.set(mountPoint, localFS);
+              console.log('%c[青丝]%c 权限恢复成功，已挂载: ' + name, 'color:#b08a4a;font-weight:bold', 'color:#7a8b6f');
+            } else {
+              // 权限被拒绝，标记为断开连接
+              const localFS = new MountedLocalFS(handle, name);
+              localFS._permissionLost = true;
+              localFS._permissionChecked = true;
+              this._mounts.set(mountPoint, localFS);
+              console.warn('[青丝] 挂载权限被拒绝（已标记断开）: ' + name);
+            }
+          } catch (reqErr) {
+            // requestPermission 失败（用户关闭弹窗等），标记断开
+            const localFS = new MountedLocalFS(handle, name);
+            localFS._permissionLost = true;
+            localFS._permissionChecked = true;
+            this._mounts.set(mountPoint, localFS);
+            console.warn('[青丝] 权限请求失败（已标记断开）: ' + name, reqErr.message);
+          }
+        } catch (e) {
+          console.warn('[青丝] 恢复挂载失败: ' + (folder.name || 'unknown'), e);
+        }
+      }
+
+      QingSi.sync?.broadcast('fs:mounted', { restored: true });
+      QingSi.cache?.invalidate('/');
+    } catch (e) {
+      console.warn('[青丝] 恢复挂载过程出错:', e);
+    }
   }
 
   async _repairInconsistencies() {
