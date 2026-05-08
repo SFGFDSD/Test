@@ -1,0 +1,572 @@
+<!-- JISHENG-OS-APP: {"name":"豪华时钟","width":620,"height":740,"icon":"<svg class='icon-svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><circle cx='12' cy='12' r='10'/><path d='M12 6v6l4 2'/></svg>"} -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>豪华时钟</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0A0A0A;
+            --fg: #D4C9B5;
+            --gold: #D4AF37;
+            --gold-dim: rgba(212,175,55,0.5);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: radial-gradient(ellipse at 50% 40%, #161612 0%, #0C0C0A 60%, #050504 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: 'Noto Serif SC', 'Playfair Display', serif;
+            user-select: none;
+        }
+        #clock { display: block; }
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            margin-top: 22px;
+        }
+        .info-item {
+            color: var(--fg);
+            font-size: 13px;
+            letter-spacing: 3px;
+            opacity: 0.6;
+            font-family: 'Playfair Display', 'Noto Serif SC', serif;
+        }
+        .info-sep {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--gold-dim);
+        }
+        .caliber {
+            color: var(--gold-dim);
+            font-size: 10px;
+            letter-spacing: 4px;
+            margin-top: 12px;
+            font-family: 'Playfair Display', serif;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="clock"></canvas>
+    <div class="info-row">
+        <span class="info-item" id="dateText"></span>
+        <span class="info-sep"></span>
+        <span class="info-item" id="weekText"></span>
+    </div>
+    <div class="caliber">Cal. JS-1052</div>
+
+    <script>
+    (function() {
+        /* ===== 初始化 Canvas ===== */
+        const canvas = document.getElementById('clock');
+        const ctx = canvas.getContext('2d');
+        const dateEl = document.getElementById('dateText');
+        const weekEl = document.getElementById('weekText');
+
+        const dpr = window.devicePixelRatio || 1;
+        const SIZE = 580;
+        canvas.width = SIZE * dpr;
+        canvas.height = SIZE * dpr;
+        canvas.style.width = SIZE + 'px';
+        canvas.style.height = SIZE + 'px';
+        ctx.scale(dpr, dpr);
+
+        const CX = SIZE / 2;
+        const CY = SIZE / 2;
+
+        /* ===== 半径参数 ===== */
+        const OUTER_R = 278;           // 外壳外径
+        const CASE_INNER = 256;        // 外壳内径
+        const GROOVE_INNER = 252;      // 沟槽内径
+        const DIAL_R = 244;            // 表盘半径
+        const TICK_OUTER = DIAL_R - 5; // 刻度外端
+        const HOUR_TICK_LEN = 22;
+        const MIN_TICK_LEN = 10;
+        const NUM_R = DIAL_R - 48;     // 数字半径
+
+        /* ===== 指针参数 ===== */
+        const HOUR_LEN = DIAL_R * 0.48;
+        const MIN_LEN  = DIAL_R * 0.70;
+        const SEC_LEN  = DIAL_R * 0.78;
+        const SEC_TAIL = DIAL_R * 0.18;
+
+        /* ===== 颜色常量 ===== */
+        const GOLD       = '#D4AF37';
+        const GOLD_LT    = '#F5E6A3';
+        const GOLD_DK    = '#8B6914';
+        const SEC_RED    = '#B22222';
+
+        /* ===== 罗马数字 ===== */
+        const ROMAN = ['XII','I','II','III','IV','V','VI','VII','VIII','IX','X','XI'];
+
+        /* ===== 辅助：圆角矩形路径 ===== */
+        function roundRectPath(x, y, w, h, r) {
+            r = Math.max(0, Math.min(r, w / 2, h / 2));
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        /* ============================================================
+         *  绘制函数
+         * ============================================================ */
+
+        /* --- 表壳 --- */
+        function drawCase() {
+            // 外壳主体 — 对角线渐变模拟抛光金属
+            var g1 = ctx.createLinearGradient(
+                CX - OUTER_R, CY - OUTER_R,
+                CX + OUTER_R, CY + OUTER_R
+            );
+            g1.addColorStop(0,    '#5A4A2A');
+            g1.addColorStop(0.15, '#B09A5C');
+            g1.addColorStop(0.30, '#F5E6A3');
+            g1.addColorStop(0.48, '#E0C96A');
+            g1.addColorStop(0.52, '#E8D070');
+            g1.addColorStop(0.70, '#F5E6A3');
+            g1.addColorStop(0.85, '#B09A5C');
+            g1.addColorStop(1,    '#5A4A2A');
+
+            ctx.beginPath();
+            ctx.arc(CX, CY, OUTER_R, 0, Math.PI * 2);
+            ctx.fillStyle = g1;
+            ctx.fill();
+
+            // 外壳内侧暗环（沟槽）
+            ctx.beginPath();
+            ctx.arc(CX, CY, CASE_INNER + 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#1E1A0E';
+            ctx.fill();
+
+            // 表圈
+            var g2 = ctx.createLinearGradient(
+                CX - CASE_INNER, CY - CASE_INNER,
+                CX + CASE_INNER, CY + CASE_INNER
+            );
+            g2.addColorStop(0,    '#4A3C1F');
+            g2.addColorStop(0.25, '#9B8650');
+            g2.addColorStop(0.50, '#B8A060');
+            g2.addColorStop(0.75, '#9B8650');
+            g2.addColorStop(1,    '#4A3C1F');
+
+            ctx.beginPath();
+            ctx.arc(CX, CY, CASE_INNER + 1, 0, Math.PI * 2);
+            ctx.fillStyle = g2;
+            ctx.fill();
+
+            // 表圈内暗线
+            ctx.beginPath();
+            ctx.arc(CX, CY, GROOVE_INNER + 1, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(30,26,14,0.7)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        /* --- 表冠（3 点钟外侧） --- */
+        function drawCrown() {
+            var cw = 12, ch = 18;
+            var cx0 = CX + OUTER_R - 2;
+            var cy0 = CY - ch / 2;
+
+            var gc = ctx.createLinearGradient(cx0, cy0, cx0 + cw, cy0 + ch);
+            gc.addColorStop(0,   '#7A6A3A');
+            gc.addColorStop(0.3, '#D4AF37');
+            gc.addColorStop(0.5, '#F5E6A3');
+            gc.addColorStop(0.7, '#D4AF37');
+            gc.addColorStop(1,   '#7A6A3A');
+
+            roundRectPath(cx0, cy0, cw, ch, 3);
+            ctx.fillStyle = gc;
+            ctx.fill();
+            ctx.strokeStyle = '#5A4A2A';
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+
+            // 纹理横线
+            for (var i = 0; i < 6; i++) {
+                var ly = cy0 + 2.5 + i * 2.5;
+                ctx.beginPath();
+                ctx.moveTo(cx0 + 2, ly);
+                ctx.lineTo(cx0 + cw - 2, ly);
+                ctx.strokeStyle = 'rgba(90,74,42,0.6)';
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+            }
+        }
+
+        /* --- 表盘 --- */
+        function drawDial() {
+            // 底色 — 深蓝径向渐变
+            var gd = ctx.createRadialGradient(CX, CY, 0, CX, CY, DIAL_R);
+            gd.addColorStop(0,   '#1C2D50');
+            gd.addColorStop(0.6, '#12203E');
+            gd.addColorStop(1,   '#0A1628');
+            ctx.beginPath();
+            ctx.arc(CX, CY, DIAL_R, 0, Math.PI * 2);
+            ctx.fillStyle = gd;
+            ctx.fill();
+
+            // 太阳纹 — 极细放射线
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(CX, CY, DIAL_R, 0, Math.PI * 2);
+            ctx.clip();
+            ctx.globalAlpha = 0.025;
+            for (var i = 0; i < 720; i++) {
+                var a = (i / 720) * Math.PI * 2;
+                ctx.beginPath();
+                ctx.moveTo(CX, CY);
+                ctx.lineTo(CX + Math.cos(a) * DIAL_R, CY + Math.sin(a) * DIAL_R);
+                ctx.strokeStyle = '#C9A84C';
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            // 内圈细线装饰
+            ctx.beginPath();
+            ctx.arc(CX, CY, DIAL_R - 2, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(212,175,55,0.25)';
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+
+            // 轨道环（分钟刻度轨道）
+            ctx.beginPath();
+            ctx.arc(CX, CY, TICK_OUTER + 1, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(212,175,55,0.12)';
+            ctx.lineWidth = 0.3;
+            ctx.stroke();
+        }
+
+        /* --- 刻度 --- */
+        function drawTicks() {
+            for (var i = 0; i < 60; i++) {
+                var angle = (i / 60) * Math.PI * 2 - Math.PI / 2;
+                var isHour = (i % 5 === 0);
+                var oR = TICK_OUTER;
+                var iR = isHour ? oR - HOUR_TICK_LEN : oR - MIN_TICK_LEN;
+
+                ctx.beginPath();
+                ctx.moveTo(CX + Math.cos(angle) * iR, CY + Math.sin(angle) * iR);
+                ctx.lineTo(CX + Math.cos(angle) * oR, CY + Math.sin(angle) * oR);
+
+                if (isHour) {
+                    ctx.strokeStyle = GOLD_LT;
+                    ctx.lineWidth = 2.8;
+                } else {
+                    ctx.strokeStyle = 'rgba(212,175,55,0.45)';
+                    ctx.lineWidth = 0.8;
+                }
+                ctx.stroke();
+            }
+        }
+
+        /* --- 罗马数字 --- */
+        function drawNumbers() {
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = GOLD;
+
+            for (var i = 0; i < 12; i++) {
+                if (i === 3) continue; // 3 点位留给日期窗口
+                var angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
+                var x = CX + Math.cos(angle) * NUM_R;
+                var y = CY + Math.sin(angle) * NUM_R;
+                var num = ROMAN[i];
+                var fs = num.length > 3 ? DIAL_R * 0.075 : DIAL_R * 0.095;
+                ctx.font = '600 ' + fs + 'px "Playfair Display", serif';
+                ctx.fillText(num, x, y + 1);
+            }
+        }
+
+        /* --- 品牌文字 --- */
+        function drawBrand() {
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // JISHENG
+            ctx.font = '700 ' + (DIAL_R * 0.072) + 'px "Playfair Display", serif';
+            ctx.fillStyle = GOLD;
+            ctx.fillText('JISHENG', CX, CY - DIAL_R * 0.30);
+
+            // AUTOMATIC — 手动加空格模拟字间距
+            ctx.font = '400 ' + (DIAL_R * 0.032) + 'px "Playfair Display", serif';
+            ctx.fillStyle = 'rgba(212,175,55,0.55)';
+            ctx.fillText('A U T O M A T I C', CX, CY - DIAL_R * 0.22);
+
+            // SWISS MADE
+            ctx.font = '400 ' + (DIAL_R * 0.028) + 'px "Playfair Display", serif';
+            ctx.fillStyle = 'rgba(212,175,55,0.4)';
+            ctx.fillText('S W I S S   M A D E', CX, CY + DIAL_R * 0.36);
+        }
+
+        /* --- 日期窗口（3 点钟） --- */
+        function drawDateWindow(day) {
+            var wx = CX + DIAL_R * 0.42;
+            var wy = CY;
+            var ww = DIAL_R * 0.09;
+            var wh = DIAL_R * 0.065;
+
+            // 窗口凹陷背景
+            ctx.fillStyle = '#0D1520';
+            ctx.fillRect(wx - ww, wy - wh, ww * 2, wh * 2);
+
+            // 边框
+            ctx.strokeStyle = GOLD;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(wx - ww, wy - wh, ww * 2, wh * 2);
+
+            // 日期数字
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '700 ' + (DIAL_R * 0.055) + 'px "Playfair Display", serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(day.toString(), wx, wy + 1);
+        }
+
+        /* --- 时针 / 分针（Dauphine 剑形） --- */
+        function drawHand(angle, length, tailLen, width) {
+            ctx.save();
+            ctx.translate(CX, CY);
+            ctx.rotate(angle);
+
+            // 投影
+            ctx.shadowColor = 'rgba(0,0,0,0.45)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 3;
+            ctx.shadowOffsetY = 3;
+
+            // 剑形轮廓
+            ctx.beginPath();
+            ctx.moveTo(0, -length);
+            ctx.lineTo(width, -length * 0.15);
+            ctx.lineTo(width * 0.5, tailLen);
+            ctx.lineTo(0, tailLen * 0.85);
+            ctx.lineTo(-width * 0.5, tailLen);
+            ctx.lineTo(-width, -length * 0.15);
+            ctx.closePath();
+
+            // 金属渐变
+            var gh = ctx.createLinearGradient(-width, 0, width, 0);
+            gh.addColorStop(0,   GOLD_DK);
+            gh.addColorStop(0.25, GOLD);
+            gh.addColorStop(0.48, GOLD_LT);
+            gh.addColorStop(0.52, GOLD_LT);
+            gh.addColorStop(0.75, GOLD);
+            gh.addColorStop(1,   GOLD_DK);
+            ctx.fillStyle = gh;
+            ctx.fill();
+
+            // 轮廓线
+            ctx.shadowColor = 'transparent';
+            ctx.strokeStyle = 'rgba(139,105,20,0.35)';
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+
+            // 中线高光
+            ctx.beginPath();
+            ctx.moveTo(0, -length * 0.94);
+            ctx.lineTo(0, tailLen * 0.7);
+            ctx.strokeStyle = 'rgba(255,248,220,0.2)';
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        /* --- 秒针 --- */
+        function drawSecondHand(angle) {
+            ctx.save();
+            ctx.translate(CX, CY);
+            ctx.rotate(angle);
+
+            // 投影
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 5;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+
+            // 主杆
+            ctx.beginPath();
+            ctx.moveTo(0, SEC_TAIL);
+            ctx.lineTo(0, -SEC_LEN);
+            ctx.strokeStyle = SEC_RED;
+            ctx.lineWidth = 1.4;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            ctx.shadowColor = 'transparent';
+
+            // 配重圆
+            ctx.beginPath();
+            ctx.arc(0, SEC_TAIL * 0.6, 4.5, 0, Math.PI * 2);
+            ctx.fillStyle = SEC_RED;
+            ctx.fill();
+
+            // 尖端
+            ctx.beginPath();
+            ctx.moveTo(0, -SEC_LEN);
+            ctx.lineTo(-1.5, -SEC_LEN + 8);
+            ctx.lineTo(1.5, -SEC_LEN + 8);
+            ctx.closePath();
+            ctx.fillStyle = SEC_RED;
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        /* --- 中心轴 --- */
+        function drawCenter() {
+            // 外圈
+            var gc = ctx.createRadialGradient(CX - 2, CY - 2, 0, CX, CY, 9);
+            gc.addColorStop(0,   GOLD_LT);
+            gc.addColorStop(0.4, GOLD);
+            gc.addColorStop(1,   GOLD_DK);
+            ctx.beginPath();
+            ctx.arc(CX, CY, 9, 0, Math.PI * 2);
+            ctx.fillStyle = gc;
+            ctx.fill();
+
+            // 内点
+            ctx.beginPath();
+            ctx.arc(CX, CY, 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#12182A';
+            ctx.fill();
+        }
+
+        /* --- 玻璃反光 --- */
+        function drawGlassReflection() {
+            ctx.save();
+
+            // 边缘微光
+            var ge = ctx.createRadialGradient(CX, CY, DIAL_R * 0.6, CX, CY, OUTER_R);
+            ge.addColorStop(0,   'rgba(255,255,255,0)');
+            ge.addColorStop(0.9, 'rgba(255,255,255,0)');
+            ge.addColorStop(0.97,'rgba(255,255,255,0.04)');
+            ge.addColorStop(1,   'rgba(255,255,255,0.07)');
+            ctx.beginPath();
+            ctx.arc(CX, CY, OUTER_R, 0, Math.PI * 2);
+            ctx.fillStyle = ge;
+            ctx.fill();
+
+            // 上方弧形高光
+            ctx.beginPath();
+            ctx.ellipse(CX - DIAL_R * 0.08, CY - DIAL_R * 0.38,
+                        DIAL_R * 0.52, DIAL_R * 0.30, -0.15, 0, Math.PI * 2);
+            var gr = ctx.createLinearGradient(CX, CY - DIAL_R * 0.72, CX, CY - DIAL_R * 0.10);
+            gr.addColorStop(0,   'rgba(255,255,255,0.09)');
+            gr.addColorStop(0.4, 'rgba(255,255,255,0.04)');
+            gr.addColorStop(1,   'rgba(255,255,255,0)');
+            ctx.fillStyle = gr;
+            ctx.fill();
+
+            // 右下微弱反光
+            ctx.beginPath();
+            ctx.ellipse(CX + DIAL_R * 0.3, CY + DIAL_R * 0.35,
+                        DIAL_R * 0.25, DIAL_R * 0.15, 0.4, 0, Math.PI * 2);
+            var gr2 = ctx.createRadialGradient(
+                CX + DIAL_R * 0.3, CY + DIAL_R * 0.35, 0,
+                CX + DIAL_R * 0.3, CY + DIAL_R * 0.35, DIAL_R * 0.25
+            );
+            gr2.addColorStop(0, 'rgba(255,255,255,0.03)');
+            gr2.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = gr2;
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        /* --- 外壳高光弧线 --- */
+        function drawCaseHighlight() {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(CX, CY, OUTER_R - 1, -Math.PI * 0.8, -Math.PI * 0.2);
+            ctx.strokeStyle = 'rgba(255,248,220,0.12)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(CX, CY, OUTER_R - 1, Math.PI * 0.15, Math.PI * 0.55);
+            ctx.strokeStyle = 'rgba(255,248,220,0.05)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        /* ============================================================
+         *  主渲染循环
+         * ============================================================ */
+        function render() {
+            ctx.clearRect(0, 0, SIZE, SIZE);
+
+            var now = new Date();
+            var h = now.getHours() % 12;
+            var m = now.getMinutes();
+            var s = now.getSeconds();
+            var ms = now.getMilliseconds();
+            var day = now.getDate();
+
+            // 角度（0 = 12 点方向，顺时针递增）
+            var secFrac  = (s + ms / 1000) / 60;
+            var minFrac  = (m + s / 60 + ms / 60000) / 60;
+            var hourFrac = (h + m / 60 + s / 3600) / 12;
+
+            var secAngle  = secFrac  * Math.PI * 2;
+            var minAngle  = minFrac  * Math.PI * 2;
+            var hourAngle = hourFrac * Math.PI * 2;
+
+            // 按层次绘制
+            drawCase();
+            drawCrown();
+            drawCaseHighlight();
+            drawDial();
+            drawTicks();
+            drawNumbers();
+            drawBrand();
+            drawDateWindow(day);
+            drawHand(hourAngle, HOUR_LEN, DIAL_R * 0.10, 7.5);
+            drawHand(minAngle, MIN_LEN, DIAL_R * 0.12, 4.5);
+            drawSecondHand(secAngle);
+            drawCenter();
+            drawGlassReflection();
+
+            requestAnimationFrame(render);
+        }
+
+        /* --- 更新底部日期文字 --- */
+        function updateDate() {
+            var now = new Date();
+            var y = now.getFullYear();
+            var m = now.getMonth() + 1;
+            var d = now.getDate();
+            var weeks = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+            dateEl.textContent = y + '年' + m + '月' + d + '日';
+            weekEl.textContent = weeks[now.getDay()];
+        }
+
+        /* --- 等待字体就绪后启动 --- */
+        document.fonts.ready.then(function() {
+            updateDate();
+            setInterval(updateDate, 30000);
+            render();
+        });
+    })();
+    </script>
+</body>
+</html>
