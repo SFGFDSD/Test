@@ -1,0 +1,2730 @@
+<!-- JISHENG-OS-APP: {
+  "name": "万能超级工具箱",
+  "width": 1200,
+  "height": 800,
+  "icon": "<svg class='icon-svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><rect x='2' y='3' width='20' height='18' rx='2'/><path d='M8 3v18M2 9h6M2 15h6M12 7h6M12 11h6M12 15h6'/></svg>"
+} -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>万能超级工具箱</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --bg-main: #0f1117;
+  --bg-card: #1a1c25;
+  --bg-hover: #252836;
+  --bg-input: #1e2030;
+  --border: #2a2d3e;
+  --text-primary: #e4e6f0;
+  --text-secondary: #8b8fa3;
+  --accent: #6366f1;
+  --accent-light: #818cf8;
+  --accent-glow: rgba(99,102,241,0.15);
+  --green: #22c55e;
+  --red: #ef4444;
+  --yellow: #eab308;
+  --orange: #f97316;
+  --cyan: #06b6d4;
+  --pink: #ec4899;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-primary);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #333652; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #444970; }
+
+/* Layout */
+#app { display: flex; height: 100vh; width: 100vw; }
+
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: #13141d;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-header .logo {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: white;
+}
+
+.sidebar-header h1 {
+  font-size: 15px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #a5b4fc, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.sidebar-search {
+  padding: 12px 14px;
+}
+
+.sidebar-search input {
+  width: 100%;
+  padding: 8px 12px 8px 32px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+  transition: border-color .2s;
+}
+
+.sidebar-search input:focus { border-color: var(--accent); }
+
+.sidebar-search { position: relative; }
+.sidebar-search::before {
+  content: '🔍';
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 10px;
+}
+
+.nav-category {
+  margin-bottom: 4px;
+}
+
+.nav-category-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  padding: 10px 8px 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .15s;
+  font-size: 13px;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.nav-item.active {
+  background: var(--accent-glow);
+  color: var(--accent-light);
+  font-weight: 500;
+}
+
+.nav-item .icon {
+  font-size: 16px;
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.content-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(19,20,29,.8);
+  backdrop-filter: blur(10px);
+}
+
+.content-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.content-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* Home Grid */
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
+}
+
+.home-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.home-card:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,.3);
+}
+
+.home-card .card-icon {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.home-card .card-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.home-card .card-desc {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* Tool Common */
+.tool-container {
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.tool-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.tool-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--accent-light);
+}
+
+.tool-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.tool-row.cols-2 > * { flex: 1; min-width: 200px; }
+
+label.tool-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+textarea.tool-input, input.tool-input, select.tool-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: 'Inter', monospace;
+  outline: none;
+  transition: border-color .2s;
+  resize: vertical;
+}
+
+textarea.tool-input:focus, input.tool-input:focus, select.tool-input:focus {
+  border-color: var(--accent);
+}
+
+textarea.tool-input { min-height: 100px; }
+
+.btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all .15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+.btn-primary:hover { background: var(--accent-light); }
+
+.btn-secondary {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: #333652; }
+
+.btn-danger { background: var(--red); color: white; }
+.btn-success { background: var(--green); color: white; }
+
+.result-box {
+  background: #0d0f18;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  min-height: 60px;
+  position: relative;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.copy-btn:hover { color: var(--text-primary); }
+
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.badge-new {
+  background: rgba(34,197,94,.15);
+  color: var(--green);
+}
+
+/* Category banner */
+.cat-banner {
+  padding: 20px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.cat-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: .12;
+  background: linear-gradient(135deg, var(--accent), #a855f7, #ec4899);
+}
+
+.cat-banner h2 { position: relative; font-size: 22px; font-weight: 800; }
+.cat-banner p { position: relative; font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+/* Color picker */
+.color-display {
+  width: 100%;
+  height: 120px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  transition: background .2s;
+}
+
+/* Timer */
+.timer-display {
+  font-size: 56px;
+  font-weight: 800;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(135deg, #a5b4fc, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding: 30px;
+}
+
+/* QR style */
+.qr-output {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+}
+
+/* JSON tree */
+.json-tree { font-family: monospace; font-size: 13px; }
+.json-key { color: #a78bfa; }
+.json-string { color: #34d399; }
+.json-number { color: #f59e0b; }
+.json-bool { color: #f472b6; }
+.json-null { color: #6b7280; }
+
+/* Calculator */
+.calc-display {
+  background: #0d0f18;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: right;
+  margin-bottom: 12px;
+}
+.calc-display .expr { font-size: 14px; color: var(--text-secondary); min-height: 20px; }
+.calc-display .val { font-size: 32px; font-weight: 700; }
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.calc-btn {
+  padding: 16px;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  transition: all .1s;
+}
+.calc-btn:hover { background: #333652; }
+.calc-btn:active { transform: scale(.95); }
+.calc-btn.op { background: #312e81; color: var(--accent-light); }
+.calc-btn.eq { background: var(--accent); color: white; }
+.calc-btn.clear { background: #7f1d1d; color: #fca5a5; }
+
+/* Markdown preview */
+.md-preview {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  min-height: 200px;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.md-preview h1 { font-size: 24px; font-weight: 800; margin: 16px 0 8px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.md-preview h2 { font-size: 20px; font-weight: 700; margin: 14px 0 6px; }
+.md-preview h3 { font-size: 16px; font-weight: 600; margin: 12px 0 4px; }
+.md-preview p { margin: 8px 0; }
+.md-preview code { background: #1e1e2e; padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #a78bfa; }
+.md-preview pre { background: #0d0f18; padding: 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; }
+.md-preview pre code { background: none; padding: 0; }
+.md-preview blockquote { border-left: 3px solid var(--accent); padding-left: 14px; color: var(--text-secondary); margin: 10px 0; }
+.md-preview ul, .md-preview ol { padding-left: 24px; margin: 8px 0; }
+.md-preview li { margin: 4px 0; }
+.md-preview a { color: var(--accent-light); }
+.md-preview strong { font-weight: 700; }
+.md-preview em { font-style: italic; }
+.md-preview table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+.md-preview th, .md-preview td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+.md-preview th { background: var(--bg-hover); font-weight: 600; }
+
+/* Note cards */
+.note-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.note-card:hover { border-color: var(--accent); }
+.note-card .note-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+.note-card .note-excerpt { font-size: 12px; color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.note-card .note-time { font-size: 10px; color: var(--text-secondary); margin-top: 8px; }
+
+/* Password strength */
+.strength-bar { height: 6px; border-radius: 3px; background: var(--bg-input); overflow: hidden; margin-top: 6px; }
+.strength-fill { height: 100%; border-radius: 3px; transition: all .3s; }
+
+/* World clock */
+.clock-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+.clock-card .city { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
+.clock-card .time { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.clock-card .date { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+/* Habit / Todo */
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  transition: all .15s;
+}
+.todo-item:hover { border-color: #444970; }
+.todo-item.done { opacity: .5; }
+.todo-item.done .todo-text { text-decoration: line-through; }
+.todo-check {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.todo-check.checked { background: var(--accent); border-color: var(--accent); }
+.todo-text { flex: 1; font-size: 13px; }
+.todo-del { cursor: pointer; color: var(--text-secondary); font-size: 14px; opacity: 0; transition: opacity .15s; }
+.todo-item:hover .todo-del { opacity: 1; }
+
+/* Unit converter select fix */
+select.tool-input { appearance: auto; }
+
+/* Pomodoro */
+.pomo-circle {
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  border: 6px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto;
+  position: relative;
+}
+.pomo-circle.active { border-color: var(--accent); }
+.pomo-circle .pomo-time { font-size: 42px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.pomo-circle .pomo-label { font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: 4px; }
+
+/* Kanban */
+.kanban-board { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; }
+.kanban-col {
+  min-width: 240px;
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+}
+.kanban-col-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+.kanban-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  cursor: grab;
+}
+.kanban-card:hover { border-color: var(--accent); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { width: 56px; min-width: 56px; }
+  .sidebar-header h1, .sidebar-search, .nav-category-title, .nav-item span { display: none; }
+  .nav-item { justify-content: center; padding: 10px; }
+  .nav-item .icon { width: auto; font-size: 18px; }
+  .content-body { padding: 16px; }
+  .home-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">S</div>
+      <h1>超级工具箱</h1>
+    </div>
+    <div class="sidebar-search">
+      <input type="text" id="searchInput" placeholder="搜索工具..." oninput="filterTools(this.value)">
+    </div>
+    <div class="sidebar-nav" id="sidebarNav"></div>
+  </nav>
+
+  <!-- Main -->
+  <main class="main-content">
+    <header class="content-header">
+      <h2 id="pageTitle">🏠 首页</h2>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span style="font-size:12px;color:var(--text-secondary);" id="clockDisplay"></span>
+      </div>
+    </header>
+    <div class="content-body" id="contentBody">
+      <!-- Dynamic content -->
+    </div>
+  </main>
+</div>
+
+<script>
+// ============== APP DATA ==============
+const categories = [
+  {
+    name: '文本工具',
+    icon: '📝',
+    tools: [
+      { id:'word_count', name:'字数统计', icon:'📊', desc:'字符/词/行数统计' },
+      { id:'text_diff', name:'文本对比', icon:'🔀', desc:'对比两段文本差异' },
+      { id:'text_case', name:'大小写转换', icon:'🔤', desc:'大小写/驼峰等转换' },
+      { id:'text_replace', name:'批量替换', icon:'🔁', desc:'批量查找替换文本' },
+      { id:'text_dedupe', name:'文本去重', icon:'✂️', desc:'按行去重排序' },
+      { id:'markdown_preview', name:'Markdown预览', icon:'📑', desc:'实时预览Markdown' },
+      { id:'lorem', name:'随机文本生成', icon:'📄', desc:'生成测试用随机文本' },
+    ]
+  },
+  {
+    name: '编码转换',
+    icon: '🔐',
+    tools: [
+      { id:'base64', name:'Base64编解码', icon:'🔣', desc:'Base64编码与解码' },
+      { id:'url_encode', name:'URL编解码', icon:'🔗', desc:'URL编码与解码' },
+      { id:'html_entity', name:'HTML实体转换', icon:'🏷️', desc:'HTML实体编解码' },
+      { id:'unicode', name:'Unicode转换', icon:'🌐', desc:'Unicode编解码' },
+      { id:'hash', name:'哈希计算', icon:'#️⃣', desc:'MD5/SHA哈希值计算' },
+      { id:'jwt', name:'JWT解析', icon:'🎫', desc:'解析JWT Token' },
+    ]
+  },
+  {
+    name: 'JSON & 数据',
+    icon: '📦',
+    tools: [
+      { id:'json_format', name:'JSON格式化', icon:'{ }', desc:'JSON美化/压缩/校验' },
+      { id:'json2yaml', name:'JSON⇄YAML', icon:'🔄', desc:'JSON与YAML互转' },
+      { id:'csv_json', name:'CSV⇄JSON', icon:'📊', desc:'CSV与JSON互转' },
+      { id:'xml_json', name:'XML⇄JSON', icon:'📋', desc:'XML与JSON互转' },
+    ]
+  },
+  {
+    name: '开发工具',
+    icon: '💻',
+    tools: [
+      { id:'regex', name:'正则测试', icon:'🎯', desc:'正则表达式测试器' },
+      { id:'color_picker', name:'颜色工具', icon:'🎨', desc:'拾色器/转换/调色板' },
+      { id:'timestamp', name:'时间戳转换', icon:'⏰', desc:'时间戳与日期互转' },
+      { id:'uuid', name:'UUID生成', icon:'🆔', desc:'批量生成UUID' },
+      { id:'password_gen', name:'密码生成', icon:'🔑', desc:'随机安全密码生成' },
+      { id:'html_preview', name:'HTML预览', icon:'🌍', desc:'实时HTML代码预览' },
+      { id:'diff_viewer', name:'代码对比', icon:'📐', desc:'代码差异对比查看' },
+    ]
+  },
+  {
+    name: '计算工具',
+    icon: '🧮',
+    tools: [
+      { id:'calculator', name:'科学计算器', icon:'🔢', desc:'科学计算器' },
+      { id:'unit_convert', name:'单位换算', icon:'📏', desc:'长度/重量/温度换算' },
+      { id:'percentage', name:'百分比计算', icon:'💯', desc:'百分比/折扣/涨跌' },
+      { id:'bmi', name:'BMI计算', icon:'⚖️', desc:'身体质量指数计算' },
+      { id:'loan', name:'贷款计算', icon:'🏦', desc:'房贷/车贷月供计算' },
+      { id:'date_calc', name:'日期计算', icon:'📅', desc:'日期间隔/加减计算' },
+    ]
+  },
+  {
+    name: '效率工具',
+    icon: '⚡',
+    tools: [
+      { id:'todo', name:'待办事项', icon:'✅', desc:'简单高效的待办清单' },
+      { id:'notes', name:'快速笔记', icon:'📝', desc:'即时笔记本' },
+      { id:'pomodoro', name:'番茄钟', icon:'🍅', desc:'番茄工作法计时器' },
+      { id:'stopwatch', name:'秒表', icon:'⏱️', desc:'精确计时秒表' },
+      { id:'countdown', name:'倒计时', icon:'⏳', desc:'自定义倒计时器' },
+      { id:'kanban', name:'看板', icon:'📌', desc:'看板式任务管理' },
+    ]
+  },
+  {
+    name: '生活工具',
+    icon: '🌍',
+    tools: [
+      { id:'world_clock', name:'世界时钟', icon:'🕐', desc:'全球主要城市时间' },
+      { id:'random_pick', name:'随机抽签', icon:'🎲', desc:'随机数/抽签/决策' },
+      { id:'char_map', name:'特殊字符', icon:'★', desc:'Emoji和特殊字符表' },
+      { id:'morse', name:'摩尔斯电码', icon:'📡', desc:'摩尔斯电码编解码' },
+      { id:'number_base', name:'进制转换', icon:'🔢', desc:'2/8/10/16进制互转' },
+    ]
+  },
+  {
+    name: '图片工具',
+    icon: '🖼️',
+    tools: [
+      { id:'img_base64', name:'图片转Base64', icon:'🖼️', desc:'图片与Base64互转' },
+      { id:'svg_preview', name:'SVG预览', icon:'🎭', desc:'SVG代码实时预览' },
+      { id:'placeholder', name:'占位图生成', icon:'🏞️', desc:'生成指定尺寸占位图' },
+    ]
+  },
+];
+
+// Flatten tools
+const allTools = [];
+categories.forEach(cat => {
+  cat.tools.forEach(t => {
+    t.category = cat.name;
+    t.catIcon = cat.icon;
+    allTools.push(t);
+  });
+});
+
+// ============== STATE ==============
+let currentTool = 'home';
+let todoList = JSON.parse(localStorage.getItem('superapp_todos') || '[]');
+let notesList = JSON.parse(localStorage.getItem('superapp_notes') || '[]');
+let kanbanData = JSON.parse(localStorage.getItem('superapp_kanban') || '{"todo":[],"doing":[],"done":[]}');
+let pomodoroTimer = null;
+let pomodoroTime = 25 * 60;
+let pomodoroRunning = false;
+let stopwatchTimer = null;
+let stopwatchTime = 0;
+let stopwatchRunning = false;
+let countdownTimer = null;
+let countdownTime = 0;
+let countdownRunning = false;
+let calcExpr = '';
+let calcResult = '0';
+
+// ============== INIT ==============
+function init() {
+  renderSidebar();
+  renderHome();
+  startClock();
+}
+
+function startClock() {
+  function update() {
+    const now = new Date();
+    document.getElementById('clockDisplay').textContent =
+      now.toLocaleDateString('zh-CN', {month:'short',day:'numeric',weekday:'short'}) + ' ' +
+      now.toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'});
+  }
+  update();
+  setInterval(update, 1000);
+}
+
+// ============== SIDEBAR ==============
+function renderSidebar() {
+  const nav = document.getElementById('sidebarNav');
+  let html = `<div class="nav-item ${currentTool==='home'?'active':''}" onclick="navigateTo('home')"><span class="icon">🏠</span><span>首页</span></div>`;
+
+  categories.forEach(cat => {
+    html += `<div class="nav-category"><div class="nav-category-title">${cat.icon} ${cat.name}</div>`;
+    cat.tools.forEach(t => {
+      html += `<div class="nav-item tool-nav-item ${currentTool===t.id?'active':''}" data-id="${t.id}" data-name="${t.name}" onclick="navigateTo('${t.id}')"><span class="icon">${t.icon}</span><span>${t.name}</span></div>`;
+    });
+    html += `</div>`;
+  });
+
+  nav.innerHTML = html;
+}
+
+function filterTools(query) {
+  const items = document.querySelectorAll('.tool-nav-item');
+  const cats = document.querySelectorAll('.nav-category');
+  const q = query.toLowerCase();
+
+  if (!q) {
+    items.forEach(i => i.style.display = '');
+    cats.forEach(c => c.style.display = '');
+    return;
+  }
+
+  cats.forEach(cat => {
+    let hasVisible = false;
+    const catItems = cat.querySelectorAll('.tool-nav-item');
+    catItems.forEach(item => {
+      const name = item.dataset.name.toLowerCase();
+      const show = name.includes(q);
+      item.style.display = show ? '' : 'none';
+      if (show) hasVisible = true;
+    });
+    cat.style.display = hasVisible ? '' : 'none';
+  });
+
+  // Also filter home grid if on home
+  if (currentTool === 'home') {
+    document.querySelectorAll('.home-card').forEach(card => {
+      const name = card.dataset.name.toLowerCase();
+      card.style.display = name.includes(q) ? '' : 'none';
+    });
+  }
+}
+
+// ============== NAVIGATION ==============
+function navigateTo(id) {
+  currentTool = id;
+  renderSidebar();
+
+  const tool = allTools.find(t => t.id === id);
+  const title = document.getElementById('pageTitle');
+
+  if (id === 'home') {
+    title.textContent = '🏠 首页';
+    renderHome();
+  } else if (tool) {
+    title.textContent = `${tool.icon} ${tool.name}`;
+    renderTool(id);
+  }
+}
+
+// ============== HOME ==============
+function renderHome() {
+  const body = document.getElementById('contentBody');
+  let html = `<div class="cat-banner"><h2>🚀 万能超级工具箱</h2><p>汇集 ${allTools.length} 款实用工具，涵盖文本处理、编码转换、开发辅助、效率提升等多个领域</p></div>`;
+
+  categories.forEach(cat => {
+    html += `<div style="margin-bottom:20px;"><h3 style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--text-secondary);">${cat.icon} ${cat.name}</h3><div class="home-grid">`;
+    cat.tools.forEach(t => {
+      html += `<div class="home-card" data-name="${t.name}" onclick="navigateTo('${t.id}')"><div class="card-icon">${t.icon}</div><div class="card-name">${t.name}</div><div class="card-desc">${t.desc}</div></div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  body.innerHTML = html;
+}
+
+// ============== TOOL RENDERER ==============
+function renderTool(id) {
+  const body = document.getElementById('contentBody');
+  const fn = toolRenderers[id];
+  if (fn) {
+    body.innerHTML = `<div class="tool-container">${fn()}</div>`;
+    const initFn = toolInits[id];
+    if (initFn) initFn();
+  } else {
+    body.innerHTML = `<div class="tool-container"><div class="tool-section"><p style="color:var(--text-secondary);">该工具正在开发中...</p></div></div>`;
+  }
+}
+
+// ============== UTILITY ==============
+function copyText(text, btnEl) {
+  navigator.clipboard.writeText(text).then(() => {
+    if (btnEl) { const orig = btnEl.textContent; btnEl.textContent = '已复制!'; setTimeout(() => btnEl.textContent = orig, 1200); }
+  });
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ============== TOOL RENDERERS ==============
+const toolRenderers = {};
+const toolInits = {};
+
+// ---- Word Count ----
+toolRenderers.word_count = () => `
+<div class="tool-section">
+  <h3>输入文本</h3>
+  <textarea class="tool-input" id="wcInput" rows="8" placeholder="在此粘贴或输入文本..." oninput="updateWordCount()">在此粘贴或输入文本来统计字数。</textarea>
+</div>
+<div class="tool-section">
+  <h3>统计结果</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;" id="wcResult"></div>
+</div>`;
+toolInits.word_count = () => updateWordCount();
+
+function updateWordCount() {
+  const text = document.getElementById('wcInput').value;
+  const chars = text.length;
+  const charsNoSpace = text.replace(/\s/g,'').length;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const cnChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+  const lines = text ? text.split('\n').length : 0;
+  const paragraphs = text.trim() ? text.trim().split(/\n\s*\n/).length : 0;
+  const sentences = (text.match(/[.!?。！？]+/g) || []).length;
+  const bytes = new Blob([text]).size;
+
+  const stats = [
+    { label:'总字符', value: chars, color:'#6366f1' },
+    { label:'不含空格', value: charsNoSpace, color:'#8b5cf6' },
+    { label:'单词数', value: words, color:'#a855f7' },
+    { label:'中文字数', value: cnChars, color:'#ec4899' },
+    { label:'行数', value: lines, color:'#06b6d4' },
+    { label:'段落数', value: paragraphs, color:'#22c55e' },
+    { label:'句子数', value: sentences, color:'#f97316' },
+    { label:'字节数', value: bytes, color:'#eab308' },
+  ];
+
+  document.getElementById('wcResult').innerHTML = stats.map(s => `
+    <div style="background:var(--bg-input);border-radius:10px;padding:14px;text-align:center;">
+      <div style="font-size:28px;font-weight:800;color:${s.color};">${s.value.toLocaleString()}</div>
+      <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">${s.label}</div>
+    </div>`).join('');
+}
+
+// ---- Text Diff ----
+toolRenderers.text_diff = () => `
+<div class="tool-section">
+  <h3>文本对比</h3>
+  <div class="tool-row cols-2">
+    <div><label class="tool-label">原始文本</label><textarea class="tool-input" id="diffA" rows="8" placeholder="输入原始文本..."></textarea></div>
+    <div><label class="tool-label">修改后文本</label><textarea class="tool-input" id="diffB" rows="8" placeholder="输入修改后文本..."></textarea></div>
+  </div>
+  <button class="btn btn-primary" onclick="runDiff()">🔍 对比</button>
+</div>
+<div class="tool-section" id="diffResult" style="display:none;">
+  <h3>对比结果</h3>
+  <div id="diffOutput" style="font-family:monospace;font-size:13px;line-height:1.8;"></div>
+</div>`;
+
+function runDiff() {
+  const a = document.getElementById('diffA').value.split('\n');
+  const b = document.getElementById('diffB').value.split('\n');
+  let html = '';
+  const maxLen = Math.max(a.length, b.length);
+  for (let i = 0; i < maxLen; i++) {
+    const la = a[i] !== undefined ? a[i] : null;
+    const lb = b[i] !== undefined ? b[i] : null;
+    if (la === lb) {
+      html += `<div style="padding:2px 8px;border-radius:4px;">  ${escapeHtml(la)}</div>`;
+    } else {
+      if (la !== null) html += `<div style="background:rgba(239,68,68,.15);padding:2px 8px;border-radius:4px;color:#fca5a5;">- ${escapeHtml(la)}</div>`;
+      if (lb !== null) html += `<div style="background:rgba(34,197,94,.15);padding:2px 8px;border-radius:4px;color:#86efac;">+ ${escapeHtml(lb)}</div>`;
+    }
+  }
+  document.getElementById('diffResult').style.display = '';
+  document.getElementById('diffOutput').innerHTML = html || '<span style="color:var(--text-secondary);">两段文本完全相同</span>';
+}
+
+// ---- Text Case ----
+toolRenderers.text_case = () => `
+<div class="tool-section">
+  <h3>输入文本</h3>
+  <textarea class="tool-input" id="caseInput" rows="4" placeholder="输入要转换的文本...">Hello World Example Text</textarea>
+</div>
+<div class="tool-section">
+  <h3>转换操作</h3>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;">
+    <button class="btn btn-primary" onclick="convertCase('upper')">🔠 大写</button>
+    <button class="btn btn-primary" onclick="convertCase('lower')">🔡 小写</button>
+    <button class="btn btn-primary" onclick="convertCase('title')">Aa 首字母大写</button>
+    <button class="btn btn-primary" onclick="convertCase('camel')">🐪 驼峰</button>
+    <button class="btn btn-primary" onclick="convertCase('snake')">🐍 下划线</button>
+    <button class="btn btn-primary" onclick="convertCase('kebab')">🍢 短横线</button>
+    <button class="btn btn-primary" onclick="convertCase('reverse')">🔄 反转</button>
+  </div>
+</div>
+<div class="tool-section">
+  <h3>结果</h3>
+  <div class="result-box" id="caseResult"><button class="copy-btn" onclick="copyText(document.getElementById('caseResult').innerText.trim(),this)">复制</button></div>
+</div>`;
+
+function convertCase(type) {
+  const text = document.getElementById('caseInput').value;
+  let result = '';
+  switch(type) {
+    case 'upper': result = text.toUpperCase(); break;
+    case 'lower': result = text.toLowerCase(); break;
+    case 'title': result = text.replace(/\b\w/g, c => c.toUpperCase()); break;
+    case 'camel': result = text.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (_, c) => c.toUpperCase()); break;
+    case 'snake': result = text.replace(/[\s-]+/g, '_').replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase(); break;
+    case 'kebab': result = text.replace(/[\s_]+/g, '-').replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(); break;
+    case 'reverse': result = text.split('').reverse().join(''); break;
+  }
+  document.getElementById('caseResult').innerHTML = escapeHtml(result) + `<button class="copy-btn" onclick="copyText('${result.replace(/'/g,"\\'")}',this)">复制</button>`;
+}
+
+// ---- Text Replace ----
+toolRenderers.text_replace = () => `
+<div class="tool-section">
+  <h3>输入文本</h3>
+  <textarea class="tool-input" id="replInput" rows="6" placeholder="输入要处理的文本..."></textarea>
+</div>
+<div class="tool-section">
+  <h3>替换规则</h3>
+  <div class="tool-row cols-2">
+    <div><label class="tool-label">查找</label><input class="tool-input" id="replFind" placeholder="查找内容"></div>
+    <div><label class="tool-label">替换为</label><input class="tool-input" id="replReplace" placeholder="替换内容"></div>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center;">
+    <label style="font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="replRegex"> 正则模式</label>
+    <label style="font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="replCase"> 区分大小写</label>
+    <button class="btn btn-primary" onclick="doReplace()">替换</button>
+  </div>
+</div>
+<div class="tool-section">
+  <h3>结果</h3>
+  <div class="result-box" id="replResult"><button class="copy-btn" onclick="copyText(document.getElementById('replResult').innerText.trim(),this)">复制</button></div>
+</div>`;
+
+function doReplace() {
+  const text = document.getElementById('replInput').value;
+  const find = document.getElementById('replFind').value;
+  const repl = document.getElementById('replReplace').value;
+  const isRegex = document.getElementById('replRegex').checked;
+  const caseSensitive = document.getElementById('replCase').checked;
+
+  let result;
+  if (isRegex) {
+    try {
+      const flags = caseSensitive ? 'g' : 'gi';
+      result = text.replace(new RegExp(find, flags), repl);
+    } catch(e) { result = '正则表达式错误: ' + e.message; }
+  } else {
+    const flags = caseSensitive ? 'g' : 'gi';
+    result = text.replace(new RegExp(find.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), flags), repl);
+  }
+  document.getElementById('replResult').innerHTML = escapeHtml(result) + `<button class="copy-btn" onclick="copyText(document.getElementById('replResult').innerText.trim(),this)">复制</button>`;
+}
+
+// ---- Text Dedupe ----
+toolRenderers.text_dedupe = () => `
+<div class="tool-section">
+  <h3>输入文本 (每行一条)</h3>
+  <textarea class="tool-input" id="dedupeInput" rows="8" placeholder="每行一条数据..."></textarea>
+</div>
+<div class="tool-section">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button class="btn btn-primary" onclick="dedupeText('dedupe')">去重</button>
+    <button class="btn btn-primary" onclick="dedupeText('sort')">排序</button>
+    <button class="btn btn-primary" onclick="dedupeText('sort_dedupe')">排序+去重</button>
+    <button class="btn btn-primary" onclick="dedupeText('reverse')">反转行序</button>
+    <button class="btn btn-primary" onclick="dedupeText('shuffle')">随机打乱</button>
+    <button class="btn btn-primary" onclick="dedupeText('trim')">去空行</button>
+    <button class="btn btn-primary" onclick="dedupeText('number')">添加行号</button>
+  </div>
+</div>
+<div class="tool-section">
+  <h3>结果</h3>
+  <textarea class="tool-input" id="dedupeOutput" rows="8" readonly></textarea>
+</div>`;
+
+function dedupeText(mode) {
+  let lines = document.getElementById('dedupeInput').value.split('\n');
+  switch(mode) {
+    case 'dedupe': lines = [...new Set(lines)]; break;
+    case 'sort': lines.sort(); break;
+    case 'sort_dedupe': lines = [...new Set(lines)].sort(); break;
+    case 'reverse': lines.reverse(); break;
+    case 'shuffle': for(let i=lines.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[lines[i],lines[j]]=[lines[j],lines[i]];} break;
+    case 'trim': lines = lines.filter(l => l.trim()); break;
+    case 'number': lines = lines.map((l,i) => `${i+1}. ${l}`); break;
+  }
+  document.getElementById('dedupeOutput').value = lines.join('\n');
+}
+
+// ---- Markdown Preview ----
+toolRenderers.markdown_preview = () => `
+<div class="tool-section">
+  <h3>Markdown 编辑器</h3>
+  <div class="tool-row cols-2">
+    <div><label class="tool-label">输入 Markdown</label><textarea class="tool-input" id="mdInput" rows="16" oninput="renderMarkdown()" placeholder="# 标题\n\n正文内容..."># Hello Markdown!\n\n这是一个 **Markdown** 预览工具。\n\n## 功能\n\n- 实时预览\n- 支持常见语法\n- 代码高亮\n\n> 引用文本示例\n\n\`\`\`js\nconsole.log("Hello!");\n\`\`\`\n\n| 姓名 | 年龄 |\n|------|------|\n| 张三 | 25 |\n| 李四 | 30 |</textarea></div>
+    <div><label class="tool-label">预览</label><div class="md-preview" id="mdOutput"></div></div>
+  </div>
+</div>`;
+toolInits.markdown_preview = () => renderMarkdown();
+
+function renderMarkdown() {
+  let md = document.getElementById('mdInput').value;
+  // Simple markdown parser
+  let html = md
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^\> (.+)$/gm, '<blockquote>$1</blockquote>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank">$1</a>')
+    .replace(/^\|(.+)\|$/gm, (match) => {
+      const cells = match.split('|').filter(c => c.trim());
+      if (cells.every(c => /^[\s-:]+$/.test(c))) return '';
+      const tag = 'td';
+      return '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
+    })
+    .replace(/(<tr>.*<\/tr>[\s]*)+/s, '<table>$&</table>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>');
+  html = '<p>' + html + '</p>';
+  document.getElementById('mdOutput').innerHTML = html;
+}
+
+// ---- Lorem Generator ----
+toolRenderers.lorem = () => `
+<div class="tool-section">
+  <h3>随机文本生成</h3>
+  <div class="tool-row" style="align-items:end;">
+    <div><label class="tool-label">段落数</label><input class="tool-input" id="loremCount" type="number" value="3" min="1" max="20"></div>
+    <div><label class="tool-label">语言</label><select class="tool-input" id="loremLang"><option value="cn">中文</option><option value="en">英文</option></select></div>
+    <div><button class="btn btn-primary" onclick="genLorem()" style="margin-bottom:0;">生成</button></div>
+  </div>
+</div>
+<div class="tool-section">
+  <h3>生成结果</h3>
+  <div class="result-box" id="loremResult" style="white-space:pre-wrap;"><button class="copy-btn" onclick="copyText(document.getElementById('loremResult').innerText.trim(),this)">复制</button></div>
+</div>`;
+
+function genLorem() {
+  const count = parseInt(document.getElementById('loremCount').value) || 3;
+  const lang = document.getElementById('loremLang').value;
+  const cnSentences = ['天地玄黄，宇宙洪荒。','日月盈昃，辰宿列张。','寒来暑往，秋收冬藏。','闰余成岁，律吕调阳。','云腾致雨，露结为霜。','金生丽水，玉出昆冈。','剑号巨阙，珠称夜光。','果珍李柰，菜重芥姜。','海咸河淡，鳞潜羽翔。','龙师火帝，鸟官人皇。','始制文字，乃服衣裳。','推位让国，有虞陶唐。','坐朝问道，垂拱平章。','爱育黎首，臣伏戎羌。','遐迩一体，率宾归王。','鸣凤在竹，白驹食场。','化被草木，赖及万方。','学优登仕，摄职从政。','存以甘棠，去而益咏。','乐殊贵贱，礼别尊卑。'];
+  const enSentences = ['Lorem ipsum dolor sit amet, consectetur adipiscing elit.','Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.','Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.','Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore.','Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia.','Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.','Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.','Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis.','Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse.','At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis.'];
+
+  const sentences = lang === 'cn' ? cnSentences : enSentences;
+  let result = [];
+  for (let p = 0; p < count; p++) {
+    const sCount = 3 + Math.floor(Math.random() * 4);
+    let para = [];
+    for (let s = 0; s < sCount; s++) {
+      para.push(sentences[Math.floor(Math.random() * sentences.length)]);
+    }
+    result.push(para.join(''));
+  }
+  document.getElementById('loremResult').innerHTML = escapeHtml(result.join('\n\n')) + `<button class="copy-btn" onclick="copyText(document.getElementById('loremResult').innerText.trim(),this)">复制</button>`;
+}
+
+// ---- Base64 ----
+toolRenderers.base64 = () => `
+<div class="tool-section">
+  <h3>Base64 编解码</h3>
+  <label class="tool-label">输入</label>
+  <textarea class="tool-input" id="b64Input" rows="5" placeholder="输入文本或Base64字符串..."></textarea>
+  <div style="display:flex;gap:8px;margin-top:12px;">
+    <button class="btn btn-primary" onclick="b64Encode()">编码 →</button>
+    <button class="btn btn-secondary" onclick="b64Decode()">← 解码</button>
+  </div>
+</div>
+<div class="tool-section">
+  <h3>结果</h3>
+  <div class="result-box" id="b64Result"><button class="copy-btn" onclick="copyText(document.getElementById('b64Result').innerText.trim(),this)">复制</button></div>
+</div>`;
+
+function b64Encode() {
+  try {
+    const result = btoa(unescape(encodeURIComponent(document.getElementById('b64Input').value)));
+    document.getElementById('b64Result').innerHTML = escapeHtml(result) + `<button class="copy-btn" onclick="copyText(document.getElementById('b64Result').innerText.trim(),this)">复制</button>`;
+  } catch(e) { document.getElementById('b64Result').textContent = '编码失败: ' + e.message; }
+}
+
+function b64Decode() {
+  try {
+    const result = decodeURIComponent(escape(atob(document.getElementById('b64Input').value.trim())));
+    document.getElementById('b64Result').innerHTML = escapeHtml(result) + `<button class="copy-btn" onclick="copyText(document.getElementById('b64Result').innerText.trim(),this)">复制</button>`;
+  } catch(e) { document.getElementById('b64Result').textContent = '解码失败: ' + e.message; }
+}
+
+// ---- URL Encode ----
+toolRenderers.url_encode = () => `
+<div class="tool-section">
+  <h3>URL 编解码</h3>
+  <textarea class="tool-input" id="urlInput" rows="4" placeholder="输入URL或文本..."></textarea>
+  <div style="display:flex;gap:8px;margin-top:12px;">
+    <button class="btn btn-primary" onclick="urlEncode()">编码 →</button>
+    <button class="btn btn-secondary" onclick="urlDecode()">← 解码</button>
+  </div>
+</div>
+<div class="tool-section">
+  <h3>结果</h3>
+  <div class="result-box" id="urlResult"><button class="copy-btn" onclick="copyText(document.getElementById('urlResult').innerText.trim(),this)">复制</button></div>
+</div>`;
+
+function urlEncode() {
+  document.getElementById('urlResult').innerHTML = escapeHtml(encodeURIComponent(document.getElementById('urlInput').value)) + `<button class="copy-btn" onclick="copyText(document.getElementById('urlResult').innerText.trim(),this)">复制</button>`;
+}
+function urlDecode() {
+  try {
+    document.getElementById('urlResult').innerHTML = escapeHtml(decodeURIComponent(document.getElementById('urlInput').value)) + `<button class="copy-btn" onclick="copyText(document.getElementById('urlResult').innerText.trim(),this)">复制</button>`;
+  } catch(e) { document.getElementById('urlResult').textContent = '解码失败'; }
+}
+
+// ---- HTML Entity ----
+toolRenderers.html_entity = () => `
+<div class="tool-section">
+  <h3>HTML 实体转换</h3>
+  <textarea class="tool-input" id="htmlEntInput" rows="4" placeholder="输入HTML或实体文本..."></textarea>
+  <div style="display:flex;gap:8px;margin-top:12px;">
+    <button class="btn btn-primary" onclick="htmlEntEncode()">转实体 →</button>
+    <button class="btn btn-secondary" onclick="htmlEntDecode()">← 转HTML</button>
+  </div>
+</div>
+<div class="tool-section">
+  <h3>结果</h3>
+  <div class="result-box" id="htmlEntResult"><button class="copy-btn" onclick="copyText(document.getElementById('htmlEntResult').innerText.trim(),this)">复制</button></div>
+</div>`;
+
+function htmlEntEncode() {
+  const text = document.getElementById('htmlEntInput').value;
+  const div = document.createElement('textarea');
+  div.textContent = text;
+  document.getElementById('htmlEntResult').innerHTML = escapeHtml(div.innerHTML) + `<button class="copy-btn" onclick="copyText(document.getElementById('htmlEntResult').innerText.trim(),this)">复制</button>`;
+}
+function htmlEntDecode() {
+  const text = document.getElementById('htmlEntInput').value;
+  const div = document.createElement('textarea');
+  div.innerHTML = text;
+  document.getElementById('htmlEntResult').innerHTML = escapeHtml(div.value) + `<button class="copy-btn" onclick="copyText(document.getElementById('htmlEntResult').innerText.trim(),this)">复制</button>`;
+}
+
+// ---- Unicode ----
+toolRenderers.unicode = () => `
+<div class="tool-section">
+  <h3>Unicode 转换</h3>
+  <textarea class="tool-input" id="uniInput" rows="4" placeholder="输入文本或Unicode序列 (如 \\u4f60\\u597d)..."></textarea>
+  <div style="display:flex;gap:8px;margin-top:12px;">
+    <button class="btn btn-primary" onclick="uniEncode()">文本→Unicode</button>
+    <button class="btn btn-secondary" onclick="uniDecode()">Unicode→文本</button>
+  </div>
+</div>
+<div class="tool-section">
+  <h3>结果</h3>
+  <div class="result-box" id="uniResult"><button class="copy-btn" onclick="copyText(document.getElementById('uniResult').innerText.trim(),this)">复制</button></div>
+</div>`;
+
+function uniEncode() {
+  const text = document.getElementById('uniInput').value;
+  const result = Array.from(text).map(c => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0')).join('');
+  document.getElementById('uniResult').innerHTML = escapeHtml(result) + `<button class="copy-btn" onclick="copyText(document.getElementById('uniResult').innerText.trim(),this)">复制</button>`;
+}
+function uniDecode() {
+  try {
+    const text = document.getElementById('uniInput').value;
+    const result = text.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+    document.getElementById('uniResult').innerHTML = escapeHtml(result) + `<button class="copy-btn" onclick="copyText(document.getElementById('uniResult').innerText.trim(),this)">复制</button>`;
+  } catch(e) { document.getElementById('uniResult').textContent = '解码失败'; }
+}
+
+// ---- Hash ----
+toolRenderers.hash = () => `
+<div class="tool-section">
+  <h3>哈希计算</h3>
+  <textarea class="tool-input" id="hashInput" rows="4" placeholder="输入要计算哈希的文本..."></textarea>
+  <button class="btn btn-primary" onclick="calcHash()" style="margin-top:12px;">计算哈希</button>
+</div>
+<div class="tool-section">
+  <h3>结果</h3>
+  <div id="hashResults"></div>
+</div>`;
+
+async function calcHash() {
+  const text = document.getElementById('hashInput').value;
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+
+  const algos = ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'];
+  let html = '';
+
+  for (const algo of algos) {
+    const hashBuffer = await crypto.subtle.digest(algo, data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    html += `<div style="margin-bottom:10px;"><label class="tool-label">${algo}</label><div class="result-box" style="min-height:auto;padding:10px 14px;font-size:12px;">${hashHex}<button class="copy-btn" onclick="copyText('${hashHex}',this)">复制</button></div></div>`;
+  }
+
+  document.getElementById('hashResults').innerHTML = html;
+}
+
+// ---- JWT ----
+toolRenderers.jwt = () => `
+<div class="tool-section">
+  <h3>JWT 解析</h3>
+  <textarea class="tool-input" id="jwtInput" rows="4" placeholder="粘贴JWT Token..."></textarea>
+  <button class="btn btn-primary" onclick="parseJWT()" style="margin-top:12px;">解析</button>
+</div>
+<div class="tool-section" id="jwtResult" style="display:none;">
+  <h3>解析结果</h3>
+  <div id="jwtOutput"></div>
+</div>`;
+
+function parseJWT() {
+  const token = document.getElementById('jwtInput').value.trim();
+  const parts = token.split('.');
+  if (parts.length !== 3) {
+    document.getElementById('jwtResult').style.display = '';
+    document.getElementById('jwtOutput').innerHTML = '<span style="color:var(--red);">无效的JWT格式</span>';
+    return;
+  }
+  try {
+    const header = JSON.parse(atob(parts[0].replace(/-/g,'+').replace(/_/g,'/')));
+    const payload = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+    let html = `<label class="tool-label">Header</label><div class="result-box" style="margin-bottom:12px;">${escapeHtml(JSON.stringify(header, null, 2))}</div>`;
+    html += `<label class="tool-label">Payload</label><div class="result-box" style="margin-bottom:12px;">${escapeHtml(JSON.stringify(payload, null, 2))}</div>`;
+    if (payload.exp) {
+      const expDate = new Date(payload.exp * 1000);
+      const isExpired = expDate < new Date();
+      html += `<div style="padding:8px 12px;background:${isExpired?'rgba(239,68,68,.15)':'rgba(34,197,94,.15)'};border-radius:8px;font-size:13px;">过期时间: ${expDate.toLocaleString('zh-CN')} ${isExpired?'(已过期)':'(未过期)'}</div>`;
+    }
+    document.getElementById('jwtResult').style.display = '';
+    document.getElementById('jwtOutput').innerHTML = html;
+  } catch(e) {
+    document.getElementById('jwtResult').style.display = '';
+    document.getElementById('jwtOutput').innerHTML = '<span style="color:var(--red);">解析失败: ' + e.message + '</span>';
+  }
+}
+
+// ---- JSON Format ----
+toolRenderers.json_format = () => `
+<div class="tool-section">
+  <h3>JSON 格式化 / 校验</h3>
+  <textarea class="tool-input" id="jsonInput" rows="10" placeholder='{"name":"张三","age":25,"hobbies":["编程","阅读"]}'></textarea>
+  <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+    <button class="btn btn-primary" onclick="jsonFormat()">🎨 美化</button>
+    <button class="btn btn-secondary" onclick="jsonMinify()">📦 压缩</button>
+    <button class="btn btn-secondary" onclick="jsonValidate()">✅ 校验</button>
+  </div>
+</div>
+<div class="tool-section">
+  <h3>结果</h3>
+  <div class="result-box" id="jsonResult" style="max-height:400px;overflow-y:auto;"><button class="copy-btn" onclick="copyText(document.getElementById('jsonResult').innerText.trim(),this)">复制</button></div>
+</div>`;
+
+function jsonFormat() {
+  try {
+    const obj = JSON.parse(document.getElementById('jsonInput').value);
+    const formatted = JSON.stringify(obj, null, 2);
+    document.getElementById('jsonResult').innerHTML = escapeHtml(formatted) + `<button class="copy-btn" onclick="copyText(document.getElementById('jsonResult').innerText.trim(),this)">复制</button>`;
+  } catch(e) { document.getElementById('jsonResult').innerHTML = `<span style="color:var(--red);">JSON格式错误: ${e.message}</span>`; }
+}
+function jsonMinify() {
+  try {
+    const obj = JSON.parse(document.getElementById('jsonInput').value);
+    const minified = JSON.stringify(obj);
+    document.getElementById('jsonResult').innerHTML = escapeHtml(minified) + `<button class="copy-btn" onclick="copyText(document.getElementById('jsonResult').innerText.trim(),this)">复制</button>`;
+  } catch(e) { document.getElementById('jsonResult').innerHTML = `<span style="color:var(--red);">JSON格式错误: ${e.message}</span>`; }
+}
+function jsonValidate() {
+  try {
+    JSON.parse(document.getElementById('jsonInput').value);
+    document.getElementById('jsonResult').innerHTML = `<span style="color:var(--green);">✅ JSON格式正确</span>`;
+  } catch(e) { document.getElementById('jsonResult').innerHTML = `<span style="color:var(--red);">❌ JSON格式错误: ${e.message}</span>`; }
+}
+
+// ---- JSON to YAML ----
+toolRenderers.json2yaml = () => `
+<div class="tool-section">
+  <h3>JSON ⇄ YAML 转换</h3>
+  <div class="tool-row cols-2">
+    <div><label class="tool-label">JSON</label><textarea class="tool-input" id="j2yJson" rows="10" placeholder='{"key":"value"}'></textarea></div>
+    <div><label class="tool-label">YAML</label><textarea class="tool-input" id="j2yYaml" rows="10" placeholder="key: value"></textarea></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px;">
+    <button class="btn btn-primary" onclick="json2yaml()">JSON → YAML</button>
+    <button class="btn btn-secondary" onclick="yaml2json()">YAML → JSON</button>
+  </div>
+</div>`;
+
+function json2yaml() {
+  try {
+    const obj = JSON.parse(document.getElementById('j2yJson').value);
+    document.getElementById('j2yYaml').value = toYaml(obj, 0);
+  } catch(e) { document.getElementById('j2yYaml').value = '错误: ' + e.message; }
+}
+
+function toYaml(obj, indent) {
+  const prefix = '  '.repeat(indent);
+  let result = '';
+  if (Array.isArray(obj)) {
+    obj.forEach(item => {
+      if (typeof item === 'object' && item !== null) {
+        result += prefix + '- ' + toYaml(item, indent + 1).trim() + '\n';
+      } else {
+        result += prefix + '- ' + JSON.stringify(item) + '\n';
+      }
+    });
+  } else if (typeof obj === 'object' && obj !== null) {
+    Object.entries(obj).forEach(([key, val]) => {
+      if (typeof val === 'object' && val !== null) {
+        result += prefix + key + ':\n' + toYaml(val, indent + 1);
+      } else {
+        result += prefix + key + ': ' + (typeof val === 'string' ? '"' + val + '"' : val) + '\n';
+      }
+    });
+  }
+  return result;
+}
+
+function yaml2json() {
+  // Simple YAML parser for basic cases
+  try {
+    const yaml = document.getElementById('j2yYaml').value;
+    const lines = yaml.split('\n').filter(l => l.trim() && !l.trim().startsWith('#'));
+    const obj = {};
+    lines.forEach(line => {
+      const match = line.match(/^(\s*)(\w+):\s*(.*)$/);
+      if (match) {
+        let val = match[3].trim();
+        if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1,-1);
+        else if (val === 'true') val = true;
+        else if (val === 'false') val = false;
+        else if (val === 'null') val = null;
+        else if (!isNaN(val) && val !== '') val = Number(val);
+        if (val !== '') obj[match[2]] = val;
+      }
+    });
+    document.getElementById('j2yJson').value = JSON.stringify(obj, null, 2);
+  } catch(e) { document.getElementById('j2yJson').value = '错误: ' + e.message; }
+}
+
+// ---- CSV JSON ----
+toolRenderers.csv_json = () => `
+<div class="tool-section">
+  <h3>CSV ⇄ JSON 转换</h3>
+  <div class="tool-row cols-2">
+    <div><label class="tool-label">CSV</label><textarea class="tool-input" id="csvInput" rows="10" placeholder="name,age,city\n张三,25,北京\n李四,30,上海"></textarea></div>
+    <div><label class="tool-label">JSON</label><textarea class="tool-input" id="csvJsonOutput" rows="10" readonly></textarea></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px;">
+    <button class="btn btn-primary" onclick="csv2json()">CSV → JSON</button>
+    <button class="btn btn-secondary" onclick="json2csv()">JSON → CSV</button>
+  </div>
+</div>`;
+
+function csv2json() {
+  const csv = document.getElementById('csvInput').value.trim();
+  const lines = csv.split('\n');
+  if (lines.length < 2) { document.getElementById('csvJsonOutput').value = '至少需要标题行和一行数据'; return; }
+  const headers = lines[0].split(',').map(h => h.trim());
+  const result = [];
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(',');
+    const obj = {};
+    headers.forEach((h, j) => obj[h] = values[j]?.trim() || '');
+    result.push(obj);
+  }
+  document.getElementById('csvJsonOutput').value = JSON.stringify(result, null, 2);
+}
+
+function json2csv() {
+  try {
+    const json = JSON.parse(document.getElementById('csvJsonOutput').value);
+    if (!Array.isArray(json) || json.length === 0) throw new Error('需要JSON数组');
+    const headers = Object.keys(json[0]);
+    let csv = headers.join(',') + '\n';
+    json.forEach(row => {
+      csv += headers.map(h => row[h] ?? '').join(',') + '\n';
+    });
+    document.getElementById('csvInput').value = csv.trim();
+  } catch(e) { document.getElementById('csvInput').value = '错误: ' + e.message; }
+}
+
+// ---- XML JSON ----
+toolRenderers.xml_json = () => `
+<div class="tool-section">
+  <h3>XML ⇄ JSON 转换</h3>
+  <div class="tool-row cols-2">
+    <div><label class="tool-label">XML</label><textarea class="tool-input" id="xmlInput" rows="10" placeholder="<root><name>张三</name><age>25</age></root>"></textarea></div>
+    <div><label class="tool-label">JSON</label><textarea class="tool-input" id="xmlJsonOutput" rows="10" readonly></textarea></div>
+  </div>
+  <button class="btn btn-primary" onclick="xml2json()" style="margin-top:12px;">XML → JSON</button>
+</div>`;
+
+function xml2json() {
+  try {
+    const xml = document.getElementById('xmlInput').value;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xml, 'text/xml');
+    const error = doc.querySelector('parsererror');
+    if (error) throw new Error('XML格式错误');
+    const result = xmlNodeToObj(doc.documentElement);
+    document.getElementById('xmlJsonOutput').value = JSON.stringify(result, null, 2);
+  } catch(e) { document.getElementById('xmlJsonOutput').value = '错误: ' + e.message; }
+}
+
+function xmlNodeToObj(node) {
+  const obj = {};
+  if (node.children.length === 0) return node.textContent;
+  Array.from(node.children).forEach(child => {
+    obj[child.tagName] = xmlNodeToObj(child);
+  });
+  return obj;
+}
+
+// ---- Regex Tester ----
+toolRenderers.regex = () => `
+<div class="tool-section">
+  <h3>正则表达式测试</h3>
+  <div class="tool-row">
+    <div style="flex:1;"><label class="tool-label">正则表达式</label><input class="tool-input" id="regexPattern" placeholder="例如: \\d+\\.\\d+" oninput="testRegex()"></div>
+    <div style="width:100px;"><label class="tool-label">标志</label><input class="tool-input" id="regexFlags" value="gi" oninput="testRegex()"></div>
+  </div>
+  <label class="tool-label">测试文本</label>
+  <textarea class="tool-input" id="regexText" rows="6" placeholder="输入要测试的文本..." oninput="testRegex()">价格: 12.99元, 折扣: 8.5折, 共计: 100.00元
+电话: 13800138000, 邮箱: test@example.com
+日期: 2024-01-15, IP: 192.168.1.1</textarea>
+</div>
+<div class="tool-section">
+  <h3>匹配结果</h3>
+  <div id="regexResult" style="font-family:monospace;font-size:13px;line-height:1.8;"></div>
+</div>`;
+toolInits.regex = () => testRegex();
+
+function testRegex() {
+  const pattern = document.getElementById('regexPattern').value;
+  const flags = document.getElementById('regexFlags').value;
+  const text = document.getElementById('regexText').value;
+
+  if (!pattern) { document.getElementById('regexResult').innerHTML = '<span style="color:var(--text-secondary);">输入正则表达式开始测试</span>'; return; }
+
+  try {
+    const regex = new RegExp(pattern, flags);
+    const matches = [];
+    let match;
+    if (flags.includes('g')) {
+      while ((match = regex.exec(text)) !== null) {
+        matches.push({ value: match[0], index: match.index, groups: match.slice(1) });
+        if (matches.length > 100) break;
+      }
+    } else {
+      match = regex.exec(text);
+      if (match) matches.push({ value: match[0], index: match.index, groups: match.slice(1) });
+    }
+
+    let html = `<div style="margin-bottom:10px;color:var(--green);">找到 ${matches.length} 个匹配</div>`;
+
+    // Highlight in text
+    let highlighted = escapeHtml(text);
+    const sortedMatches = [...matches].sort((a, b) => b.index - a.index);
+    // Simple highlight by replacing in text
+    let highlightText = text;
+    const allMatches = text.matchAll(new RegExp(pattern, flags.includes('g') ? flags : flags + 'g'));
+    highlighted = '';
+    let lastIndex = 0;
+    for (const m of [...text.matchAll(new RegExp(pattern, flags.includes('g') ? flags : flags + 'g'))]) {
+      highlighted += escapeHtml(text.slice(lastIndex, m.index));
+      highlighted += `<span style="background:rgba(99,102,241,.3);border-radius:3px;padding:1px 2px;">${escapeHtml(m[0])}</span>`;
+      lastIndex = m.index + m[0].length;
+    }
+    highlighted += escapeHtml(text.slice(lastIndex));
+
+    html += `<div style="background:var(--bg-input);padding:12px;border-radius:8px;line-height:1.8;white-space:pre-wrap;margin-bottom:12px;">${highlighted}</div>`;
+
+    if (matches.length > 0) {
+      html += `<table style="width:100%;font-size:12px;"><tr style="color:var(--text-secondary);"><td style="padding:4px 8px;">#</td><td style="padding:4px 8px;">匹配值</td><td style="padding:4px 8px;">位置</td><td style="padding:4px 8px;">捕获组</td></tr>`;
+      matches.forEach((m, i) => {
+        html += `<tr><td style="padding:4px 8px;">${i+1}</td><td style="padding:4px 8px;color:var(--accent-light);">${escapeHtml(m.value)}</td><td style="padding:4px 8px;">${m.index}</td><td style="padding:4px 8px;">${m.groups.length ? m.groups.map(g => escapeHtml(g||'')).join(', ') : '-'}</td></tr>`;
+      });
+      html += `</table>`;
+    }
+
+    document.getElementById('regexResult').innerHTML = html;
+  } catch(e) {
+    document.getElementById('regexResult').innerHTML = `<span style="color:var(--red);">正则表达式错误: ${e.message}</span>`;
+  }
+}
+
+// ---- Color Picker ----
+toolRenderers.color_picker = () => `
+<div class="tool-section">
+  <h3>颜色工具</h3>
+  <div class="tool-row" style="align-items:start;">
+    <div style="flex:1;">
+      <input type="color" id="colorPicker" value="#6366f1" oninput="updateColor(this.value)" style="width:100%;height:80px;border:none;border-radius:10px;cursor:pointer;background:none;">
+      <input class="tool-input" id="colorHexInput" value="#6366f1" oninput="updateColor(this.value)" style="margin-top:8px;text-align:center;font-size:16px;font-weight:600;">
+    </div>
+    <div style="flex:2;" id="colorInfo"></div>
+  </div>
+</div>
+<div class="tool-section">
+  <h3>调色板</h3>
+  <div id="colorPalette" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:6px;"></div>
+</div>`;
+toolInits.color_picker = () => updateColor('#6366f1');
+
+function updateColor(hex) {
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+  document.getElementById('colorPicker').value = hex;
+  document.getElementById('colorHexInput').value = hex;
+
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+
+  // HSL
+  const rr=r/255, gg=g/255, bb=b/255;
+  const max=Math.max(rr,gg,bb), min=Math.min(rr,gg,bb);
+  let h,s,l=(max+min)/2;
+  if(max===min){h=s=0;}else{const d=max-min;s=l>.5?d/(2-max-min):d/(max+min);switch(max){case rr:h=((gg-bb)/d+(gg<bb?6:0))/6;break;case gg:h=((bb-rr)/d+2)/6;break;case bb:h=((rr-gg)/d+4)/6;break;}};
+  h=Math.round(h*360);s=Math.round(s*100);l=Math.round(l*100);
+
+  const info = document.getElementById('colorInfo');
+  info.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div style="background:var(--bg-input);padding:10px;border-radius:8px;"><span style="font-size:11px;color:var(--text-secondary);">HEX</span><div style="font-weight:600;font-size:14px;">${hex}</div></div>
+      <div style="background:var(--bg-input);padding:10px;border-radius:8px;"><span style="font-size:11px;color:var(--text-secondary);">RGB</span><div style="font-weight:600;font-size:14px;">rgb(${r}, ${g}, ${b})</div></div>
+      <div style="background:var(--bg-input);padding:10px;border-radius:8px;"><span style="font-size:11px;color:var(--text-secondary);">HSL</span><div style="font-weight:600;font-size:14px;">hsl(${h}, ${s}%, ${l}%)</div></div>
+      <div style="background:var(--bg-input);padding:10px;border-radius:8px;"><span style="font-size:11px;color:var(--text-secondary);">预览</span><div style="width:100%;height:30px;border-radius:6px;margin-top:4px;" style="background:${hex};"></div></div>
+    </div>
+    <div class="color-display" style="background:${hex};margin-top:10px;"></div>`;
+
+  // Generate palette (shades)
+  const palette = document.getElementById('colorPalette');
+  let palHtml = '';
+  for (let i = 10; i >= 0; i--) {
+    const shade = `hsl(${h}, ${s}%, ${Math.round(i * 9)}%)`;
+    palHtml += `<div style="background:${shade};height:50px;border-radius:8px;cursor:pointer;border:1px solid var(--border);" onclick="updateColor(hslToHex(${h},${s},${Math.round(i*9)}))" title="${shade}"></div>`;
+  }
+  palette.innerHTML = palHtml;
+}
+
+function hslToHex(h,s,l) {
+  s/=100;l/=100;
+  const a=s*Math.min(l,1-l);
+  const f=n=>{const k=(n+h/30)%12;return l-a*Math.max(Math.min(k-3,9-k,1),-1);};
+  return '#'+[f(0),f(8),f(4)].map(x=>Math.round(x*255).toString(16).padStart(2,'0')).join('');
+}
+
+// ---- Timestamp ----
+toolRenderers.timestamp = () => `
+<div class="tool-section">
+  <h3>当前时间</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="tsNow"></div>
+</div>
+<div class="tool-section">
+  <h3>时间戳 → 日期</h3>
+  <div class="tool-row" style="align-items:end;">
+    <div style="flex:1;"><label class="tool-label">时间戳</label><input class="tool-input" id="tsInput" placeholder="1700000000"></div>
+    <div><button class="btn btn-primary" onclick="ts2date()">转换</button></div>
+  </div>
+  <div class="result-box" id="tsResult" style="margin-top:10px;min-height:auto;"></div>
+</div>
+<div class="tool-section">
+  <h3>日期 → 时间戳</h3>
+  <div class="tool-row" style="align-items:end;">
+    <div style="flex:1;"><label class="tool-label">日期时间</label><input class="tool-input" id="dateInput" type="datetime-local"></div>
+    <div><button class="btn btn-primary" onclick="date2ts()">转换</button></div>
+  </div>
+  <div class="result-box" id="dateResult" style="margin-top:10px;min-height:auto;"></div>
+</div>`;
+toolInits.timestamp = () => {
+  document.getElementById('dateInput').value = new Date().toISOString().slice(0,16);
+  updateTsNow();
+  setInterval(updateTsNow, 1000);
+};
+
+function updateTsNow() {
+  const now = new Date();
+  const el = document.getElementById('tsNow');
+  if (!el) return;
+  el.innerHTML = `
+    <div style="background:var(--bg-input);padding:12px;border-radius:8px;"><span style="font-size:11px;color:var(--text-secondary);">秒级时间戳</span><div style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;">${Math.floor(now.getTime()/1000)}</div></div>
+    <div style="background:var(--bg-input);padding:12px;border-radius:8px;"><span style="font-size:11px;color:var(--text-secondary);">毫秒级时间戳</span><div style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;">${now.getTime()}</div></div>
+    <div style="background:var(--bg-input);padding:12px;border-radius:8px;"><span style="font-size:11px;color:var(--text-secondary);">本地时间</span><div style="font-size:16px;font-weight:600;">${now.toLocaleString('zh-CN')}</div></div>
+    <div style="background:var(--bg-input);padding:12px;border-radius:8px;"><span style="font-size:11px;color:var(--text-secondary);">ISO 8601</span><div style="font-size:14px;font-weight:600;">${now.toISOString()}</div></div>`;
+}
+
+function ts2date() {
+  let ts = parseInt(document.getElementById('tsInput').value);
+  if (isNaN(ts)) { document.getElementById('tsResult').textContent = '请输入有效时间戳'; return; }
+  if (ts < 1e12) ts *= 1000; // 秒转毫秒
+  const d = new Date(ts);
+  document.getElementById('tsResult').innerHTML = `
+    本地时间: <strong>${d.toLocaleString('zh-CN')}</strong><br>
+    ISO 8601: <strong>${d.toISOString()}</strong><br>
+    UTC时间: <strong>${d.toUTCString()}</strong>`;
+}
+
+function date2ts() {
+  const d = new Date(document.getElementById('dateInput').value);
+  if (isNaN(d.getTime())) { document.getElementById('dateResult').textContent = '请选择有效日期'; return; }
+  document.getElementById('dateResult').innerHTML = `
+    秒级: <strong>${Math.floor(d.getTime()/1000)}</strong><br>
+    毫秒级: <strong>${d.getTime()}</strong>`;
+}
+
+// ---- UUID ----
+toolRenderers.uuid = () => `
+<div class="tool-section">
+  <h3>UUID 生成器</h3>
+  <div class="tool-row" style="align-items:end;">
+    <div><label class="tool-label">数量</label><input class="tool-input" id="uuidCount" type="number" value="5" min="1" max="100"></div>
+    <div><label class="tool-label">格式</label><select class="tool-input" id="uuidFormat"><option value="standard">标准 (带横杠)</option><option value="nohyphen">无横杠</option><option value="upper">大写</option><option value="braces">{大括号}</option></select></div>
+    <div><button class="btn btn-primary" onclick="genUUIDs()">生成</button></div>
+  </div>
+</div>
+<div class="tool-section">
+  <h3>结果</h3>
+  <div class="result-box" id="uuidResult" style="max-height:300px;overflow-y:auto;"><button class="copy-btn" onclick="copyText(document.getElementById('uuidResult').innerText.trim(),this)">复制</button></div>
+</div>`;
+
+function genUUIDs() {
+  const count = Math.min(parseInt(document.getElementById('uuidCount').value) || 5, 100);
+  const format = document.getElementById('uuidFormat').value;
+  const uuids = [];
+  for (let i = 0; i < count; i++) {
+    let uuid = crypto.randomUUID();
+    switch(format) {
+      case 'nohyphen': uuid = uuid.replace(/-/g,''); break;
+      case 'upper': uuid = uuid.toUpperCase(); break;
+      case 'braces': uuid = '{' + uuid + '}'; break;
+    }
+    uuids.push(uuid);
+  }
+  document.getElementById('uuidResult').innerHTML = uuids.join('\n') + `<button class="copy-btn" onclick="copyText(document.getElementById('uuidResult').innerText.trim(),this)">复制</button>`;
+}
+
+// ---- Password Generator ----
+toolRenderers.password_gen = () => `
+<div class="tool-section">
+  <h3>密码生成器</h3>
+  <div class="tool-row">
+    <div><label class="tool-label">长度</label><input class="tool-input" id="pwLen" type="range" min="4" max="64" value="16" oninput="document.getElementById('pwLenVal').textContent=this.value;genPassword()"><span id="pwLenVal" style="font-size:13px;font-weight:600;margin-left:8px;">16</span></div>
+  </div>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;">
+    <label style="font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="pwUpper" checked onchange="genPassword()"> 大写字母</label>
+    <label style="font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="pwLower" checked onchange="genPassword()"> 小写字母</label>
+    <label style="font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="pwDigit" checked onchange="genPassword()"> 数字</label>
+    <label style="font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="pwSymbol" checked onchange="genPassword()"> 特殊字符</label>
+  </div>
+</div>
+<div class="tool-section">
+  <h3>生成的密码</h3>
+  <div id="pwResult" style="font-size:22px;font-weight:700;font-family:monospace;text-align:center;padding:20px;background:var(--bg-input);border-radius:10px;letter-spacing:2px;word-break:break-all;"></div>
+  <div class="strength-bar" style="margin-top:10px;"><div class="strength-fill" id="pwStrength"></div></div>
+  <div id="pwStrengthText" style="font-size:12px;margin-top:6px;text-align:center;"></div>
+  <div style="display:flex;gap:8px;justify-content:center;margin-top:14px;">
+    <button class="btn btn-primary" onclick="genPassword()">🔄 重新生成</button>
+    <button class="btn btn-secondary" onclick="copyText(document.getElementById('pwResult').textContent,this)">📋 复制</button>
+  </div>
+</div>`;
+toolInits.password_gen = () => genPassword();
+
+function genPassword() {
+  const len = parseInt(document.getElementById('pwLen').value);
+  let chars = '';
+  if (document.getElementById('pwUpper').checked) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if (document.getElementById('pwLower').checked) chars += 'abcdefghijklmnopqrstuvwxyz';
+  if (document.getElementById('pwDigit').checked) chars += '0123456789';
+  if (document.getElementById('pwSymbol').checked) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+  if (!chars) chars = 'abcdefghijklmnopqrstuvwxyz';
+
+  let pw = '';
+  const arr = new Uint32Array(len);
+  crypto.getRandomValues(arr);
+  for (let i = 0; i < len; i++) pw += chars[arr[i] % chars.length];
+
+  document.getElementById('pwResult').textContent = pw;
+
+  // Strength
+  let score = 0;
+  if (len >= 8) score++;
+  if (len >= 12) score++;
+  if (len >= 16) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[a-z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+  const pct = Math.min(score / 7 * 100, 100);
+  const color = pct < 40 ? 'var(--red)' : pct < 70 ? 'var(--yellow)' : 'var(--green)';
+  const label = pct < 40 ? '弱' : pct < 70 ? '中等' : '强';
+
+  document.getElementById('pwStrength').style.width = pct + '%';
+  document.getElementById('pwStrength').style.background = color;
+  document.getElementById('pwStrengthText').innerHTML = `密码强度: <span style="color:${color};font-weight:600;">${label}</span>`;
+}
+
+// ---- HTML Preview ----
+toolRenderers.html_preview = () => `
+<div class="tool-section">
+  <h3>HTML 实时预览</h3>
+  <div class="tool-row cols-2">
+    <div><label class="tool-label">HTML / CSS / JS</label><textarea class="tool-input" id="htmlCode" rows="16" oninput="previewHTML()" style="font-family:monospace;font-size:12px;">&lt;style&gt;
+  body { font-family: sans-serif; padding: 20px; background: #1a1c2e; color: #e0e0e0; }
+  .card { background: #252840; border-radius: 12px; padding: 20px; max-width: 300px; box-shadow: 0 4px 15px rgba(0,0,0,.3); }
+  .card h2 { color: #818cf8; margin-bottom: 10px; }
+  .card p { color: #9ca3af; font-size: 14px; line-height: 1.6; }
+  .btn { background: #6366f1; color: white; border: none; padding: 8px 20px; border-radius: 8px; margin-top: 12px; cursor: pointer; }
+&lt;/style&gt;
+&lt;div class="card"&gt;
+  &lt;h2&gt;🚀 Hello World&lt;/h2&gt;
+  &lt;p&gt;This is a live HTML preview. Edit the code on the left to see changes instantly.&lt;/p&gt;
+  &lt;button class="btn" onclick="alert('Clicked!')"&gt;Click Me&lt;/button&gt;
+&lt;/div&gt;</textarea></div>
+    <div><label class="tool-label">预览</label><iframe id="htmlFrame" style="width:100%;height:370px;border:1px solid var(--border);border-radius:8px;background:white;"></iframe></div>
+  </div>
+</div>`;
+toolInits.html_preview = () => previewHTML();
+
+function previewHTML() {
+  const code = document.getElementById('htmlCode').value;
+  const frame = document.getElementById('htmlFrame');
+  const doc = frame.contentDocument || frame.contentWindow.document;
+  doc.open();
+  doc.write(code);
+  doc.close();
+}
+
+// ---- Code Diff ----
+toolRenderers.diff_viewer = () => `
+<div class="tool-section">
+  <h3>代码差异对比</h3>
+  <div class="tool-row cols-2">
+    <div><label class="tool-label">原始代码</label><textarea class="tool-input" id="codeDiffA" rows="12" style="font-family:monospace;font-size:12px;" placeholder="粘贴原始代码..."></textarea></div>
+    <div><label class="tool-label">修改后代码</label><textarea class="tool-input" id="codeDiffB" rows="12" style="font-family:monospace;font-size:12px;" placeholder="粘贴修改后代码..."></textarea></div>
+  </div>
+  <button class="btn btn-primary" onclick="runDiff()">🔍 对比差异</button>
+</div>
+<div class="tool-section" id="codeDiffResult" style="display:none;">
+  <h3>差异结果</h3>
+  <div id="codeDiffOutput" style="font-family:monospace;font-size:12px;line-height:1.8;overflow-x:auto;"></div>
+</div>`;
+
+// (Reuses runDiff with different IDs - simplified for code diff)
+
+// ---- Calculator ----
+toolRenderers.calculator = () => `
+<div class="tool-section" style="max-width:340px;margin:0 auto;">
+  <div class="calc-display">
+    <div class="expr" id="calcExpr"></div>
+    <div class="val" id="calcVal">0</div>
+  </div>
+  <div class="calc-grid">
+    <button class="calc-btn clear" onclick="calcClear()">C</button>
+    <button class="calc-btn op" onclick="calcInput('(')">(</button>
+    <button class="calc-btn op" onclick="calcInput(')')">)</button>
+    <button class="calc-btn op" onclick="calcInput('/')">÷</button>
+    <button class="calc-btn" onclick="calcInput('7')">7</button>
+    <button class="calc-btn" onclick="calcInput('8')">8</button>
+    <button class="calc-btn" onclick="calcInput('9')">9</button>
+    <button class="calc-btn op" onclick="calcInput('*')">×</button>
+    <button class="calc-btn" onclick="calcInput('4')">4</button>
+    <button class="calc-btn" onclick="calcInput('5')">5</button>
+    <button class="calc-btn" onclick="calcInput('6')">6</button>
+    <button class="calc-btn op" onclick="calcInput('-')">−</button>
+    <button class="calc-btn" onclick="calcInput('1')">1</button>
+    <button class="calc-btn" onclick="calcInput('2')">2</button>
+    <button class="calc-btn" onclick="calcInput('3')">3</button>
+    <button class="calc-btn op" onclick="calcInput('+')">+</button>
+    <button class="calc-btn" onclick="calcInput('0')">0</button>
+    <button class="calc-btn" onclick="calcInput('.')">.</button>
+    <button class="calc-btn op" onclick="calcBackspace()">⌫</button>
+    <button class="calc-btn eq" onclick="calcEval()">=</button>
+  </div>
+  <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+    <button class="btn btn-secondary" onclick="calcInput('Math.sqrt(')" style="font-size:11px;">√</button>
+    <button class="btn btn-secondary" onclick="calcInput('Math.pow(')" style="font-size:11px;">x^n</button>
+    <button class="btn btn-secondary" onclick="calcInput('Math.PI')" style="font-size:11px;">π</button>
+    <button class="btn btn-secondary" onclick="calcInput('Math.sin(')" style="font-size:11px;">sin</button>
+    <button class="btn btn-secondary" onclick="calcInput('Math.cos(')" style="font-size:11px;">cos</button>
+    <button class="btn btn-secondary" onclick="calcInput('Math.log(')" style="font-size:11px;">ln</button>
+    <button class="btn btn-secondary" onclick="calcInput('%')" style="font-size:11px;">%</button>
+  </div>
+</div>`;
+
+function calcInput(val) { calcExpr += val; updateCalcDisplay(); }
+function calcClear() { calcExpr = ''; calcResult = '0'; updateCalcDisplay(); }
+function calcBackspace() { calcExpr = calcExpr.slice(0, -1); updateCalcDisplay(); }
+function calcEval() {
+  try {
+    calcResult = Function('"use strict"; return (' + calcExpr + ')')();
+    if (typeof calcResult === 'number') calcResult = parseFloat(calcResult.toPrecision(12));
+    calcExpr = String(calcResult);
+  } catch(e) { calcResult = 'Error'; }
+  updateCalcDisplay();
+}
+function updateCalcDisplay() {
+  const exprEl = document.getElementById('calcExpr');
+  const valEl = document.getElementById('calcVal');
+  if (exprEl) exprEl.textContent = calcExpr.replace(/\*/g,'×').replace(/\//g,'÷');
+  if (valEl) {
+    try {
+      const preview = Function('"use strict"; return (' + calcExpr + ')')();
+      valEl.textContent = typeof preview === 'number' ? parseFloat(preview.toPrecision(12)) : calcExpr || '0';
+    } catch(e) {
+      valEl.textContent = calcExpr || '0';
+    }
+  }
+}
+
+// ---- Unit Converter ----
+toolRenderers.unit_convert = () => `
+<div class="tool-section">
+  <h3>单位换算</h3>
+  <div class="tool-row">
+    <div style="flex:1;"><label class="tool-label">类型</label>
+      <select class="tool-input" id="unitType" onchange="updateUnits()">
+        <option value="length">长度</option>
+        <option value="weight">重量</option>
+        <option value="temperature">温度</option>
+        <option value="area">面积</option>
+        <option value="volume">体积</option>
+        <option value="speed">速度</option>
+        <option value="data">数据存储</option>
+        <option value="time">时间</option>
+      </select>
+    </div>
+  </div>
+  <div class="tool-row cols-2">
+    <div>
+      <label class="tool-label">从</label>
+      <input class="tool-input" id="unitFrom" type="number" value="1" oninput="convertUnit()">
+      <select class="tool-input" id="unitFromSel" onchange="convertUnit()" style="margin-top:6px;"></select>
+    </div>
+    <div>
+      <label class="tool-label">到</label>
+      <input class="tool-input" id="unitTo" readonly>
+      <select class="tool-input" id="unitToSel" onchange="convertUnit()" style="margin-top:6px;"></select>
+    </div>
+  </div>
+</div>`;
+toolInits.unit_convert = () => { updateUnits(); };
+
+const unitData = {
+  length: { units: ['毫米','厘米','分米','米','千米','英寸','英尺','码','英里','海里'], factors: [0.001,0.01,0.1,1,1000,0.0254,0.3048,0.9144,1609.344,1852] },
+  weight: { units: ['毫克','克','千克','吨','磅','盎司','斤','两'], factors: [0.000001,0.001,1,1000,0.453592,0.0283495,0.5,0.05] },
+  temperature: { units: ['摄氏度','华氏度','开尔文'], special: true },
+  area: { units: ['平方毫米','平方厘米','平方米','平方千米','公顷','亩','平方英尺','平方英里'], factors: [1e-6,1e-4,1,1e6,1e4,666.667,0.092903,2.59e6] },
+  volume: { units: ['毫升','升','立方米','加仑','品脱','杯','盎司(液)'], factors: [0.001,1,1000,3.78541,0.473176,0.236588,0.0295735] },
+  speed: { units: ['米/秒','千米/时','英里/时','节','马赫'], factors: [1,0.277778,0.44704,0.514444,340.29] },
+  data: { units: ['B','KB','MB','GB','TB','PB'], factors: [1,1024,1048576,1073741824,1099511627776,1125899906842624] },
+  time: { units: ['毫秒','秒','分钟','小时','天','周','月(30天)','年(365天)'], factors: [0.001,1,60,3600,86400,604800,2592000,31536000] },
+};
+
+function updateUnits() {
+  const type = document.getElementById('unitType').value;
+  const data = unitData[type];
+  const fromSel = document.getElementById('unitFromSel');
+  const toSel = document.getElementById('unitToSel');
+  fromSel.innerHTML = data.units.map((u, i) => `<option value="${i}" ${i===0?'selected':''}>${u}</option>`).join('');
+  toSel.innerHTML = data.units.map((u, i) => `<option value="${i}" ${i===3||i===1?'selected':''}>${u}</option>`).join('');
+  convertUnit();
+}
+
+function convertUnit() {
+  const type = document.getElementById('unitType').value;
+  const data = unitData[type];
+  const val = parseFloat(document.getElementById('unitFrom').value) || 0;
+  const from = parseInt(document.getElementById('unitFromSel').value);
+  const to = parseInt(document.getElementById('unitToSel').value);
+
+  let result;
+  if (type === 'temperature') {
+    // Convert to Celsius first
+    let celsius;
+    if (from === 0) celsius = val;
+    else if (from === 1) celsius = (val - 32) * 5/9;
+    else celsius = val - 273.15;
+
+    if (to === 0) result = celsius;
+    else if (to === 1) result = celsius * 9/5 + 32;
+    else result = celsius + 273.15;
+  } else {
+    const baseVal = val * data.factors[from];
+    result = baseVal / data.factors[to];
+  }
+
+  document.getElementById('unitTo').value = result.toPrecision(10).replace(/\.?0+$/, '');
+}
+
+// ---- Percentage ----
+toolRenderers.percentage = () => `
+<div class="tool-section">
+  <h3>百分比计算</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div style="background:var(--bg-input);padding:14px;border-radius:10px;">
+      <label class="tool-label">X 是 Y 的百分之几？</label>
+      <div class="tool-row"><input class="tool-input" id="pctX" placeholder="X" type="number"><input class="tool-input" id="pctY" placeholder="Y" type="number"></div>
+      <button class="btn btn-primary btn-sm" onclick="calcPct1()">计算</button>
+      <div id="pctR1" style="margin-top:8px;font-weight:600;font-size:18px;color:var(--accent-light);"></div>
+    </div>
+    <div style="background:var(--bg-input);padding:14px;border-radius:10px;">
+      <label class="tool-label">Y 的 X% 是多少？</label>
+      <div class="tool-row"><input class="tool-input" id="pctA" placeholder="百分比" type="number"><input class="tool-input" id="pctB" placeholder="总数" type="number"></div>
+      <button class="btn btn-primary btn-sm" onclick="calcPct2()">计算</button>
+      <div id="pctR2" style="margin-top:8px;font-weight:600;font-size:18px;color:var(--accent-light);"></div>
+    </div>
+    <div style="background:var(--bg-input);padding:14px;border-radius:10px;">
+      <label class="tool-label">从 X 变到 Y 涨跌多少？</label>
+      <div class="tool-row"><input class="tool-input" id="pctC" placeholder="原价" type="number"><input class="tool-input" id="pctD" placeholder="现价" type="number"></div>
+      <button class="btn btn-primary btn-sm" onclick="calcPct3()">计算</button>
+      <div id="pctR3" style="margin-top:8px;font-weight:600;font-size:18px;"></div>
+    </div>
+    <div style="background:var(--bg-input);padding:14px;border-radius:10px;">
+      <label class="tool-label">打折计算</label>
+      <div class="tool-row"><input class="tool-input" id="pctE" placeholder="原价" type="number"><input class="tool-input" id="pctF" placeholder="折扣(如8.5)" type="number"></div>
+      <button class="btn btn-primary btn-sm" onclick="calcPct4()">计算</button>
+      <div id="pctR4" style="margin-top:8px;font-weight:600;font-size:18px;color:var(--accent-light);"></div>
+    </div>
+  </div>
+</div>`;
+
+function calcPct1() { const x=parseFloat(document.getElementById('pctX').value),y=parseFloat(document.getElementById('pctY').value); document.getElementById('pctR1').textContent = y?((x/y*100).toFixed(2)+'%'):'请输入数值'; }
+function calcPct2() { const a=parseFloat(document.getElementById('pctA').value),b=parseFloat(document.getElementById('pctB').value); document.getElementById('pctR2').textContent = (a*b/100).toFixed(2); }
+function calcPct3() { const c=parseFloat(document.getElementById('pctC').value),d=parseFloat(document.getElementById('pctD').value); const pct=((d-c)/c*100).toFixed(2); document.getElementById('pctR3').innerHTML = `<span style="color:${pct>=0?'var(--green)':'var(--red)'};">${pct>=0?'+':''}${pct}%</span>`; }
+function calcPct4() { const e=parseFloat(document.getElementById('pctE').value),f=parseFloat(document.getElementById('pctF').value); document.getElementById('pctR4').textContent = '¥' + (e*f/10).toFixed(2) + ' (省 ¥' + (e-e*f/10).toFixed(2) + ')'; }
+
+// ---- BMI ----
+toolRenderers.bmi = () => `
+<div class="tool-section" style="max-width:400px;margin:0 auto;">
+  <h3>BMI 计算器</h3>
+  <div><label class="tool-label">身高 (cm)</label><input class="tool-input" id="bmiHeight" type="number" value="170"></div>
+  <div style="margin-top:10px;"><label class="tool-label">体重 (kg)</label><input class="tool-input" id="bmiWeight" type="number" value="65"></div>
+  <button class="btn btn-primary" onclick="calcBMI()" style="margin-top:12px;width:100%;">计算 BMI</button>
+  <div id="bmiResult" style="margin-top:16px;text-align:center;"></div>
+</div>`;
+
+function calcBMI() {
+  const h = parseFloat(document.getElementById('bmiHeight').value) / 100;
+  const w = parseFloat(document.getElementById('bmiWeight').value);
+  if (!h || !w) return;
+  const bmi = (w / (h * h)).toFixed(1);
+  let category, color;
+  if (bmi < 18.5) { category = '偏瘦'; color = 'var(--cyan)'; }
+  else if (bmi < 24) { category = '正常'; color = 'var(--green)'; }
+  else if (bmi < 28) { category = '偏胖'; color = 'var(--yellow)'; }
+  else { category = '肥胖'; color = 'var(--red)'; }
+
+  document.getElementById('bmiResult').innerHTML = `
+    <div style="font-size:48px;font-weight:800;color:${color};">${bmi}</div>
+    <div style="font-size:16px;font-weight:600;color:${color};margin-top:4px;">${category}</div>
+    <div style="margin-top:14px;background:var(--bg-input);border-radius:10px;padding:12px;font-size:12px;text-align:left;color:var(--text-secondary);">
+      <div>偏瘦: &lt; 18.5</div>
+      <div>正常: 18.5 - 23.9</div>
+      <div>偏胖: 24.0 - 27.9</div>
+      <div>肥胖: ≥ 28.0</div>
+    </div>`;
+}
+
+// ---- Loan Calculator ----
+toolRenderers.loan = () => `
+<div class="tool-section">
+  <h3>贷款计算器</h3>
+  <div class="tool-row">
+    <div style="flex:1;"><label class="tool-label">贷款金额 (万元)</label><input class="tool-input" id="loanAmt" type="number" value="100"></div>
+    <div style="flex:1;"><label class="tool-label">年利率 (%)</label><input class="tool-input" id="loanRate" type="number" value="3.85" step="0.01"></div>
+    <div style="flex:1;"><label class="tool-label">贷款期限 (年)</label><input class="tool-input" id="loanYears" type="number" value="30"></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:4px;">
+    <button class="btn btn-primary" onclick="calcLoan('equal')">等额本息</button>
+    <button class="btn btn-secondary" onclick="calcLoan('principal')">等额本金</button>
+  </div>
+</div>
+<div class="tool-section" id="loanResult" style="display:none;">
+  <h3>计算结果</h3>
+  <div id="loanOutput"></div>
+</div>`;
+
+function calcLoan(type) {
+  const amt = parseFloat(document.getElementById('loanAmt').value) * 10000;
+  const rate = parseFloat(document.getElementById('loanRate').value) / 100 / 12;
+  const months = parseInt(document.getElementById('loanYears').value) * 12;
+
+  if (!amt || !rate || !months) return;
+
+  let monthlyPayment, totalPayment, totalInterest;
+
+  if (type === 'equal') {
+    monthlyPayment = amt * rate * Math.pow(1+rate, months) / (Math.pow(1+rate, months) - 1);
+    totalPayment = monthlyPayment * months;
+    totalInterest = totalPayment - amt;
+  } else {
+    const principalMonthly = amt / months;
+    monthlyPayment = principalMonthly + amt * rate; // First month
+    const lastPayment = principalMonthly + principalMonthly * rate;
+    totalInterest = (months + 1) * amt * rate / 2;
+    totalPayment = amt + totalInterest;
+  }
+
+  document.getElementById('loanResult').style.display = '';
+  document.getElementById('loanOutput').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+      <div style="background:var(--bg-input);padding:14px;border-radius:10px;text-align:center;">
+        <div style="font-size:11px;color:var(--text-secondary);">${type==='equal'?'月供':'首月还款'}</div>
+        <div style="font-size:24px;font-weight:800;color:var(--accent-light);">¥${monthlyPayment.toFixed(2)}</div>
+      </div>
+      <div style="background:var(--bg-input);padding:14px;border-radius:10px;text-align:center;">
+        <div style="font-size:11px;color:var(--text-secondary);">支付总额</div>
+        <div style="font-size:24px;font-weight:800;color:var(--yellow);">¥${(totalPayment/10000).toFixed(2)}万</div>
+      </div>
+      <div style="background:var(--bg-input);padding:14px;border-radius:10px;text-align:center;">
+        <div style="font-size:11px;color:var(--text-secondary);">总利息</div>
+        <div style="font-size:24px;font-weight:800;color:var(--red);">¥${(totalInterest/10000).toFixed(2)}万</div>
+      </div>
+    </div>`;
+}
+
+// ---- Date Calculator ----
+toolRenderers.date_calc = () => `
+<div class="tool-section">
+  <h3>日期间隔计算</h3>
+  <div class="tool-row cols-2">
+    <div><label class="tool-label">开始日期</label><input class="tool-input" id="dateCalcA" type="date"></div>
+    <div><label class="tool-label">结束日期</label><input class="tool-input" id="dateCalcB" type="date"></div>
+  </div>
+  <button class="btn btn-primary" onclick="calcDateDiff()" style="margin-top:8px;">计算间隔</button>
+  <div id="dateCalcResult" style="margin-top:12px;"></div>
+</div>
+<div class="tool-section">
+  <h3>日期加减</h3>
+  <div class="tool-row">
+    <div style="flex:1;"><label class="tool-label">起始日期</label><input class="tool-input" id="dateCalcC" type="date"></div>
+    <div style="width:100px;"><label class="tool-label">天数</label><input class="tool-input" id="dateCalcDays" type="number" value="30"></div>
+    <div style="display:flex;gap:6px;align-items:end;">
+      <button class="btn btn-primary" onclick="calcDateAdd(1)">+</button>
+      <button class="btn btn-secondary" onclick="calcDateAdd(-1)">−</button>
+    </div>
+  </div>
+  <div id="dateAddResult" style="margin-top:8px;"></div>
+</div>`;
+toolInits.date_calc = () => {
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('dateCalcA').value = today;
+  document.getElementById('dateCalcB').value = today;
+  document.getElementById('dateCalcC').value = today;
+};
+
+function calcDateDiff() {
+  const a = new Date(document.getElementById('dateCalcA').value);
+  const b = new Date(document.getElementById('dateCalcB').value);
+  const diff = Math.abs(b - a);
+  const days = Math.floor(diff / 86400000);
+  const weeks = Math.floor(days / 7);
+  const months = Math.floor(days / 30.44);
+  const years = Math.floor(days / 365.25);
+  document.getElementById('dateCalcResult').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+      <div style="background:var(--bg-input);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:24px;font-weight:800;color:var(--accent-light);">${days}</div><div style="font-size:11px;color:var(--text-secondary);">天</div></div>
+      <div style="background:var(--bg-input);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:24px;font-weight:800;color:var(--cyan);">${weeks}</div><div style="font-size:11px;color:var(--text-secondary);">周</div></div>
+      <div style="background:var(--bg-input);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:24px;font-weight:800;color:var(--pink);">${months}</div><div style="font-size:11px;color:var(--text-secondary);">月</div></div>
+      <div style="background:var(--bg-input);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:24px;font-weight:800;color:var(--green);">${years}</div><div style="font-size:11px;color:var(--text-secondary);">年</div></div>
+    </div>`;
+}
+
+function calcDateAdd(dir) {
+  const d = new Date(document.getElementById('dateCalcC').value);
+  const days = parseInt(document.getElementById('dateCalcDays').value) || 0;
+  d.setDate(d.getDate() + days * dir);
+  document.getElementById('dateAddResult').innerHTML = `<div style="font-size:18px;font-weight:700;color:var(--accent-light);">${d.toLocaleDateString('zh-CN', {year:'numeric',month:'long',day:'numeric',weekday:'long'})}</div>`;
+}
+
+// ---- Todo ----
+toolRenderers.todo = () => `
+<div class="tool-section">
+  <h3>待办事项</h3>
+  <div style="display:flex;gap:8px;">
+    <input class="tool-input" id="todoInput" placeholder="添加新待办..." onkeypress="if(event.key==='Enter')addTodo()">
+    <button class="btn btn-primary" onclick="addTodo()">添加</button>
+  </div>
+</div>
+<div class="tool-section">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <h3 style="margin:0;">列表 (${todoList.filter(t=>!t.done).length}/${todoList.length})</h3>
+    <button class="btn btn-secondary" onclick="clearDoneTodos()" style="font-size:11px;">清除已完成</button>
+  </div>
+  <div id="todoList"></div>
+</div>`;
+toolInits.todo = () => renderTodos();
+
+function addTodo() {
+  const input = document.getElementById('todoInput');
+  const text = input.value.trim();
+  if (!text) return;
+  todoList.unshift({ id: Date.now(), text, done: false, time: new Date().toLocaleString('zh-CN') });
+  input.value = '';
+  saveTodos();
+  renderTodos();
+}
+
+function toggleTodo(id) {
+  const todo = todoList.find(t => t.id === id);
+  if (todo) todo.done = !todo.done;
+  saveTodos();
+  renderTodos();
+}
+
+function deleteTodo(id) {
+  todoList = todoList.filter(t => t.id !== id);
+  saveTodos();
+  renderTodos();
+}
+
+function clearDoneTodos() {
+  todoList = todoList.filter(t => !t.done);
+  saveTodos();
+  navigateTo('todo');
+}
+
+function saveTodos() { localStorage.setItem('superapp_todos', JSON.stringify(todoList)); }
+
+function renderTodos() {
+  const el = document.getElementById('todoList');
+  if (!el) return;
+  if (todoList.length === 0) { el.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:30px;">暂无待办事项</div>'; return; }
+  el.innerHTML = todoList.map(t => `
+    <div class="todo-item ${t.done?'done':''}">
+      <div class="todo-check ${t.done?'checked':''}" onclick="toggleTodo(${t.id})">${t.done?'✓':''}</div>
+      <span class="todo-text">${escapeHtml(t.text)}</span>
+      <span style="font-size:10px;color:var(--text-secondary);white-space:nowrap;">${t.time}</span>
+      <span class="todo-del" onclick="deleteTodo(${t.id})">✕</span>
+    </div>`).join('');
+}
+
+// ---- Notes ----
+toolRenderers.notes = () => `
+<div class="tool-section">
+  <h3>快速笔记</h3>
+  <div style="display:flex;gap:8px;">
+    <input class="tool-input" id="noteTitle" placeholder="标题" style="width:200px;">
+    <button class="btn btn-primary" onclick="saveNote()">保存笔记</button>
+  </div>
+  <textarea class="tool-input" id="noteContent" rows="6" placeholder="笔记内容..." style="margin-top:8px;"></textarea>
+</div>
+<div class="tool-section">
+  <h3>笔记列表 (${notesList.length})</h3>
+  <div id="noteListEl" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;"></div>
+</div>`;
+toolInits.notes = () => renderNotes();
+
+function saveNote() {
+  const title = document.getElementById('noteTitle').value.trim() || '无标题';
+  const content = document.getElementById('noteContent').value.trim();
+  if (!content) return;
+  notesList.unshift({ id: Date.now(), title, content, time: new Date().toLocaleString('zh-CN') });
+  localStorage.setItem('superapp_notes', JSON.stringify(notesList));
+  document.getElementById('noteTitle').value = '';
+  document.getElementById('noteContent').value = '';
+  navigateTo('notes');
+}
+
+function deleteNote(id) {
+  notesList = notesList.filter(n => n.id !== id);
+  localStorage.setItem('superapp_notes', JSON.stringify(notesList));
+  navigateTo('notes');
+}
+
+function renderNotes() {
+  const el = document.getElementById('noteListEl');
+  if (!el) return;
+  if (notesList.length === 0) { el.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:30px;grid-column:1/-1;">暂无笔记</div>'; return; }
+  el.innerHTML = notesList.map(n => `
+    <div class="note-card" onclick="document.getElementById('noteTitle').value='${escapeHtml(n.title)}';document.getElementById('noteContent').value=\`${n.content.replace(/`/g,"'").replace(/\\/g,'\\\\')}\`;">
+      <div style="display:flex;justify-content:space-between;"><div class="note-title">${escapeHtml(n.title)}</div><span style="cursor:pointer;font-size:12px;color:var(--text-secondary);" onclick="event.stopPropagation();deleteNote(${n.id})">✕</span></div>
+      <div class="note-excerpt">${escapeHtml(n.content)}</div>
+      <div class="note-time">${n.time}</div>
+    </div>`).join('');
+}
+
+// ---- Pomodoro ----
+toolRenderers.pomodoro = () => `
+<div class="tool-section" style="text-align:center;max-width:400px;margin:0 auto;">
+  <h3>🍅 番茄钟</h3>
+  <div class="pomo-circle ${pomodoroRunning?'active':''}" id="pomoCircle">
+    <div>
+      <div class="pomo-time" id="pomoTime">${formatTime(pomodoroTime)}</div>
+      <div class="pomo-label" id="pomoLabel">${pomodoroRunning?'专注中...':'准备开始'}</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:center;margin-top:20px;">
+    <button class="btn btn-primary" onclick="togglePomodoro()" id="pomoBtn">${pomodoroRunning?'⏸ 暂停':'▶ 开始'}</button>
+    <button class="btn btn-secondary" onclick="resetPomodoro()">🔄 重置</button>
+  </div>
+  <div style="display:flex;gap:6px;justify-content:center;margin-top:14px;">
+    <button class="btn btn-secondary" onclick="setPomoTime(25)" style="font-size:12px;">25分钟</button>
+    <button class="btn btn-secondary" onclick="setPomoTime(15)" style="font-size:12px;">15分钟</button>
+    <button class="btn btn-secondary" onclick="setPomoTime(5)" style="font-size:12px;">5分钟</button>
+    <button class="btn btn-secondary" onclick="setPomoTime(45)" style="font-size:12px;">45分钟</button>
+  </div>
+</div>`;
+
+function formatTime(s) { return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
+
+function togglePomodoro() {
+  if (pomodoroRunning) {
+    clearInterval(pomodoroTimer);
+    pomodoroRunning = false;
+  } else {
+    pomodoroRunning = true;
+    pomodoroTimer = setInterval(() => {
+      if (pomodoroTime <= 0) {
+        clearInterval(pomodoroTimer);
+        pomodoroRunning = false;
+        try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH+Jk5GHfXR3gIiRkYx/c25zgIqUk4h8cHJ9iZOTjYF2c3mDjZGOhHlyeIKMkpCIf3Z2f4eOkIuCenZ6gYmPj4qAd3Z7gYmPj4qBd3Z6gYmPj4qBd3Z6gYmPj4p/d3d8gYmOjYl/d3h+g4qNi4Z9eHqAhoyMiYN7eXuBhoyMiIN7eXuBhoyLh4J6eXyDiIuKhoF6eX2DiIqJhYF7en2DiIqJhYF7en2Dh4qJhYF7en6Dh4mIhIB7e36Eh4mIhIB7fH+EhomHg4B8fH+Fh4mHg398fH+FhomHg398fICFhomGgn98fICFhomGgn98fICFhYiGgn9+fYCFhYiGgn9+fYCFhYiFgX9+fYCFhYiFgX9+fYCFhYiFgX9+fYGFhYiFgX9+fYCFhYiFgX9+fYGGhoiDgH1+fYGGhoiDgH1+fYGGhoiDgH1+fYGGhoeDf31+f4KHh4eCf31+f4KHh4eCf31+f4KHh4eCf31+f4KHh4eCf35/f4KGhoaDf35/gIOGhoaDf35/gIOGhoaCf35/gIOGhoaCf35/gIOGhoaCf35/gIOGhoaCf35/gIOGhoaCf35/gIOGhoaCf35/gIOGhoaCf35/gIOGhoaCf35/gIOGhoaCf35/gIOGhoaCf35/gIOGhoaCfn5/gIOGhoaCfn5/gIOGhYWBfn5/gIOGhYWBfn5/gIKFhYWBfn5/gIKFhYWBfn6AgIKFhYWBfn6AgIKFhYWBfn6AgIKFhYWBfn6AgIKFhYWBfn6AgIKFhYaBfn6AgIKFhYaBfn6AgIKFhYaBfn+AgIKFhYaBfn+AgIKFhYaBfn+AgIKFhYaBfn+AgYOFhYaBfn+AgYOFhYaBf3+AgYOFhYaBf3+AgYOFhYaBf3+AgYOFhYaBf3+AgYOFhYaBf3+AgYOFhYaBf3+AgYOFhYaBf3+AgYOFhYaBf3+AgYOFhYaBf3+AgYOFhYaBf3+BgYOFhYaBf3+BgYOFhYZ/fn+BgYOFhYZ/fn+BgYOFhYZ/fn+BgYOFhYZ/fn+BgYOFhYZ/fn+BgYOFhYZ/fn+BgYOFhYZ/fn+BgYOFhYZ/fn+BgYOFhYZ/fn+BgYOFhYZ/fn+BgYOFhYZ/fn+BgYOFhYZ/fn+BgYOFhYZ/fn+BgYOFhYZ/fn+BgYOFhYZ/fn+BgYOFhYZ/fn+BgYOFhYaBf3+BgYOFhYaBf3+BgYOFhYaBf3+BgYOFhYaBf3+BgYOFhYaBf3+BgYOFhYaBf3+BgYOFhYaBf3+BgYOFhYaBf3+BgYOEhIZ/fn+BgYOEhIZ/fn+BgYOEhIZ/fn+BgYOEhIV/fn+BgYOFhYV/fn+BgYOEhIV+fn+BgYOEhIV+fn+BgYOEhIV+fn6BgYOEhIV+fn6AgIKEhIV+fn6AgIKEhIV+fn6AgIKDg4V+fn6AgIKDg4V+fn6AgIKDg4V+fn6AgIKDg4V+fn6AgIKDg4V+fn6AgIKDg4V+fn6AgIKDg4V+fn6AgIKDg4R+fn6AgIKDg4R+fn6AgIKDg4R+fn6AgIKDg4R+fn6AgIKDg4R+fn6AgIKDg4R+fn6AgIKDg4R+fn6AgIKDg4R9fn6AgIKDg4R9fn6AgIKDg4R9fn6AgIKDg4R9fn6AgIKDg4R9fn6AgIKDg4R9fn6AgIKDg4R9fn6AgIKCgoR9fn6AgIKCgoR9fn6AgIKCgoR9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fn6AgIKCgoN9fX6AgIKCgoN9fX6AgIKCgoN9fX6AgIKCgoN9fX6AgIKCgoN9fX6AgIKCgoN9fX6AgIKCgoN9fX6AgIKCgoN9fX6AgIKCgoN9fX5/gIKCgoN9fX5/gIKCgoN9fX5/gIKCgoN9fX5/gIKCgoN9fX5/gIKCgoN9fX5/gIKCgoN9fX5/gIKCgoN9fX5/gIKCgoN9fX5/gIKCgoN9fX5/gIKCgoJ8fX5/gIKCgoJ8fX5/gIKCgoJ8fX5/gIKCgoJ8fX5/gIKCgoJ8fX5/gIKCgoJ8fX5/gIKCgoJ8fX5/gIKCgoJ8fX5/gIKCgoJ8fX5/gIKCgoJ8fX5/gIKCgoJ8fX5/gIKCgoJ8fX5/gIKCgoJ8fX5/gIKCgoJ8fX5/gIKCgoJ8fX5/gIGBgYJ8fX5/gIGBgYJ8fX5/gIGBgYJ8fX5/gIGBgYF8fX5/gIGBgYF8fX5/gIGBgYF8fX5/gIGBgYF8fX5/gIGBgYF8fX5/gIGBgYF8fX5/gIGBgYF8fX5/gIGBgYF8fX5/gIGBgYF8fX5/gIGBgYF8fX5/gIGBgYF8fX5/gIGBgYF8fX5/gIGBgYF8fX5/gIGBgYF8fX5/gIGBgYF8fX5/gIGBgYF8fX5/gA==').play(); } catch(e) {}
+        navigateTo('pomodoro');
+        return;
+      }
+      pomodoroTime--;
+      const el = document.getElementById('pomoTime');
+      if (el) el.textContent = formatTime(pomodoroTime);
+    }, 1000);
+  }
+  navigateTo('pomodoro');
+}
+
+function resetPomodoro() {
+  clearInterval(pomodoroTimer);
+  pomodoroRunning = false;
+  pomodoroTime = 25 * 60;
+  navigateTo('pomodoro');
+}
+
+function setPomoTime(min) {
+  clearInterval(pomodoroTimer);
+  pomodoroRunning = false;
+  pomodoroTime = min * 60;
+  navigateTo('pomodoro');
+}
+
+// ---- Stopwatch ----
+toolRenderers.stopwatch = () => `
+<div class="tool-section" style="text-align:center;max-width:400px;margin:0 auto;">
+  <h3>⏱️ 秒表</h3>
+  <div class="timer-display" id="swDisplay">${formatStopwatch(stopwatchTime)}</div>
+  <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
+    <button class="btn btn-primary" onclick="toggleStopwatch()" id="swBtn">${stopwatchRunning?'⏸ 暂停':'▶ 开始'}</button>
+    <button class="btn btn-secondary" onclick="resetStopwatch()">🔄 重置</button>
+  </div>
+</div>`;
+
+function formatStopwatch(ms) {
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  const cs = Math.floor((ms % 1000) / 10);
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(cs).padStart(2,'0')}`;
+}
+
+function toggleStopwatch() {
+  if (stopwatchRunning) {
+    clearInterval(stopwatchTimer);
+    stopwatchRunning = false;
+  } else {
+    stopwatchRunning = true;
+    const start = Date.now() - stopwatchTime;
+    stopwatchTimer = setInterval(() => {
+      stopwatchTime = Date.now() - start;
+      const el = document.getElementById('swDisplay');
+      if (el) el.textContent = formatStopwatch(stopwatchTime);
+    }, 10);
+  }
+  navigateTo('stopwatch');
+}
+
+function resetStopwatch() {
+  clearInterval(stopwatchTimer);
+  stopwatchRunning = false;
+  stopwatchTime = 0;
+  navigateTo('stopwatch');
+}
+
+// ---- Countdown ----
+toolRenderers.countdown = () => `
+<div class="tool-section" style="text-align:center;max-width:400px;margin:0 auto;">
+  <h3>⏳ 倒计时</h3>
+  <div class="timer-display" id="cdDisplay">${formatTime(countdownTime)}</div>
+  <div class="tool-row" style="justify-content:center;margin-top:12px;">
+    <div><label class="tool-label">小时</label><input class="tool-input" id="cdH" type="number" value="0" min="0" style="width:70px;text-align:center;"></div>
+    <div><label class="tool-label">分钟</label><input class="tool-input" id="cdM" type="number" value="5" min="0" max="59" style="width:70px;text-align:center;"></div>
+    <div><label class="tool-label">秒</label><input class="tool-input" id="cdS" type="number" value="0" min="0" max="59" style="width:70px;text-align:center;"></div>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
+    <button class="btn btn-primary" onclick="startCountdown()">${countdownRunning?'⏸ 暂停':'▶ 开始'}</button>
+    <button class="btn btn-secondary" onclick="resetCountdown()">🔄 重置</button>
+  </div>
+</div>`;
+
+function startCountdown() {
+  if (countdownRunning) {
+    clearInterval(countdownTimer);
+    countdownRunning = false;
+    navigateTo('countdown');
+    return;
+  }
+  const h = parseInt(document.getElementById('cdH').value) || 0;
+  const m = parseInt(document.getElementById('cdM').value) || 0;
+  const s = parseInt(document.getElementById('cdS').value) || 0;
+  if (!countdownTime) countdownTime = h * 3600 + m * 60 + s;
+  if (countdownTime <= 0) return;
+
+  countdownRunning = true;
+  countdownTimer = setInterval(() => {
+    countdownTime--;
+    const el = document.getElementById('cdDisplay');
+    if (el) el.textContent = formatTime(countdownTime);
+    if (countdownTime <= 0) {
+      clearInterval(countdownTimer);
+      countdownRunning = false;
+      navigateTo('countdown');
+    }
+  }, 1000);
+  navigateTo('countdown');
+}
+
+function resetCountdown() {
+  clearInterval(countdownTimer);
+  countdownRunning = false;
+  countdownTime = 0;
+  navigateTo('countdown');
+}
+
+// ---- Kanban ----
+toolRenderers.kanban = () => `
+<div class="tool-section">
+  <h3>📌 看板任务管理</h3>
+  <div class="kanban-board">
+    ${['todo','doing','done'].map((col, i) => {
+      const titles = ['📋 待办','🔄 进行中','✅ 完成'];
+      return `<div class="kanban-col" data-col="${col}">
+        <div class="kanban-col-title">${titles[i]} <span style="font-size:11px;color:var(--text-secondary);">(${kanbanData[col].length})</span></div>
+        <div id="kanban_${col}">${kanbanData[col].map(item => `<div class="kanban-card">${escapeHtml(item)}<span style="float:right;cursor:pointer;color:var(--text-secondary);font-size:11px;" onclick="removeKanban('${col}','${item.replace(/'/g,"\\'")}')">✕</span></div>`).join('')}</div>
+        <input class="tool-input" placeholder="添加任务..." style="margin-top:6px;font-size:12px;" onkeypress="if(event.key==='Enter'){addKanban('${col}',this.value);this.value='';}">
+      </div>`;
+    }).join('')}
+  </div>
+  <div style="margin-top:12px;display:flex;gap:8px;">
+    <button class="btn btn-secondary" onclick="moveKanbanTask()">移动选中任务 →</button>
+  </div>
+</div>`;
+
+function addKanban(col, text) {
+  if (!text.trim()) return;
+  kanbanData[col].push(text.trim());
+  localStorage.setItem('superapp_kanban', JSON.stringify(kanbanData));
+  navigateTo('kanban');
+}
+
+function removeKanban(col, text) {
+  kanbanData[col] = kanbanData[col].filter(t => t !== text);
+  localStorage.setItem('superapp_kanban', JSON.stringify(kanbanData));
+  navigateTo('kanban');
+}
+
+// ---- World Clock ----
+toolRenderers.world_clock = () => `
+<div class="tool-section">
+  <h3>🕐 世界时钟</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;" id="worldClocks"></div>
+</div>`;
+toolInits.world_clock = () => { updateWorldClocks(); setInterval(updateWorldClocks, 1000); };
+
+function updateWorldClocks() {
+  const cities = [
+    { name:'北京', tz:'Asia/Shanghai', flag:'🇨🇳' },
+    { name:'东京', tz:'Asia/Tokyo', flag:'🇯🇵' },
+    { name:'首尔', tz:'Asia/Seoul', flag:'🇰🇷' },
+    { name:'新加坡', tz:'Asia/Singapore', flag:'🇸🇬' },
+    { name:'悉尼', tz:'Australia/Sydney', flag:'🇦🇺' },
+    { name:'迪拜', tz:'Asia/Dubai', flag:'🇦🇪' },
+    { name:'莫斯科', tz:'Europe/Moscow', flag:'🇷🇺' },
+    { name:'伦敦', tz:'Europe/London', flag:'🇬🇧' },
+    { name:'巴黎', tz:'Europe/Paris', flag:'🇫🇷' },
+    { name:'柏林', tz:'Europe/Berlin', flag:'🇩🇪' },
+    { name:'纽约', tz:'America/New_York', flag:'🇺🇸' },
+    { name:'洛杉矶', tz:'America/Los_Angeles', flag:'🇺🇸' },
+  ];
+
+  const el = document.getElementById('worldClocks');
+  if (!el) return;
+
+  el.innerHTML = cities.map(c => {
+    const now = new Date();
+    const time = now.toLocaleTimeString('zh-CN', { timeZone: c.tz, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const date = now.toLocaleDateString('zh-CN', { timeZone: c.tz, month: 'short', day: 'numeric', weekday: 'short' });
+    return `<div class="clock-card"><div class="city">${c.flag} ${c.name}</div><div class="time">${time}</div><div class="date">${date}</div></div>`;
+  }).join('');
+}
+
+// ---- Random Pick ----
+toolRenderers.random_pick = () => `
+<div class="tool-section">
+  <h3>🎲 随机工具</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div style="background:var(--bg-input);padding:16px;border-radius:10px;">
+      <label class="tool-label">随机数</label>
+      <div class="tool-row"><input class="tool-input" id="randMin" type="number" value="1" placeholder="最小"><input class="tool-input" id="randMax" type="number" value="100" placeholder="最大"></div>
+      <button class="btn btn-primary" onclick="genRandom()">生成</button>
+      <div id="randResult" style="font-size:42px;font-weight:800;text-align:center;margin-top:10px;color:var(--accent-light);"></div>
+    </div>
+    <div style="background:var(--bg-input);padding:16px;border-radius:10px;">
+      <label class="tool-label">抽签 (每行一个选项)</label>
+      <textarea class="tool-input" id="pickOptions" rows="4" placeholder="选项A\n选项B\n选项C">吃火锅
+吃烧烤
+吃日料
+吃西餐
+随便吃</textarea>
+      <button class="btn btn-primary" onclick="randomPick()" style="margin-top:8px;">🎯 抽签</button>
+      <div id="pickResult" style="font-size:28px;font-weight:800;text-align:center;margin-top:10px;color:var(--pink);"></div>
+    </div>
+  </div>
+</div>
+<div class="tool-section">
+  <h3>🪙 抛硬币</h3>
+  <div style="text-align:center;">
+    <button class="btn btn-primary" onclick="flipCoin()" style="font-size:16px;padding:12px 30px;">🪙 抛硬币</button>
+    <div id="coinResult" style="font-size:48px;margin-top:16px;"></div>
+  </div>
+</div>`;
+
+function genRandom() {
+  const min = parseInt(document.getElementById('randMin').value);
+  const max = parseInt(document.getElementById('randMax').value);
+  const result = Math.floor(Math.random() * (max - min + 1)) + min;
+  document.getElementById('randResult').textContent = result;
+}
+
+function randomPick() {
+  const options = document.getElementById('pickOptions').value.split('\n').filter(o => o.trim());
+  if (options.length === 0) return;
+  const result = options[Math.floor(Math.random() * options.length)];
+  document.getElementById('pickResult').textContent = '🎉 ' + result;
+}
+
+function flipCoin() {
+  const result = Math.random() < 0.5 ? '正面 👑' : '反面 🌙';
+  const el = document.getElementById('coinResult');
+  el.style.transition = 'transform 0.5s';
+  el.style.transform = 'rotateY(360deg)';
+  setTimeout(() => { el.textContent = result; el.style.transform = ''; }, 300);
+}
+
+// ---- Special Characters ----
+toolRenderers.char_map = () => {
+  const emojiGroups = {
+    '😀 表情': '😀😁😂🤣😃😄😅😆😉😊😋😎😍🥰😘😗😙😚🤗🤔🤐🤨😐😑😶🙄😏😣😥😮🤐😯😪😫🥱😴😌😛😜🤪😝🤑🤗🤭🤫🤔',
+    '👋 手势': '👋🤚🖐✋🖖👌🤌🤏✌🤞🤟🤘🤙👈👉👆🖕👇☝👍👎✊👊🤛🤜👏🙌👐🤲🤝🙏',
+    '❤️ 符号': '❤️🧡💛💚💙💜🖤🤍🤎💔❣💕💞💓💗💖💘💝⭐🌟✨⚡🔥💥💫💦💨🕊🌈☀️🌤⛅🌥☁️🌦🌧⛈🌩🌨',
+    '🎉 物品': '🎉🎊🎈🎁🎀🎗🏆🥇🥈🥉⚽🏀🏈⚾🥎🎾🏐🎱🏓🏸🥊🎯⛳🎣🎿🛷🥌🎮🕹🎲♠♥♦♣🃏🀄🎭',
+    '★ 特殊': '©®™℃℉°¹²³⁴⁵⁶⁷⁸⁹⁰±×÷≠≈≤≥∞∑∏∫√∂∆πΩ←→↑↓↔↕⇒⇐⇑⇓★☆●○◆◇■□▲△▼▽♠♣♥♦✓✗✚✦❖',
+    '📐 箭头': '➔➜➡⬅⬆⬇↗↘↙↖↩↪⤴⤵🔄🔃🔀🔁🔂▶⏩⏭⏯◀⏪⏮⏫⏬',
+  };
+  let html = '<div class="tool-section"><h3>特殊字符 & Emoji</h3><div id="charClicked" style="font-size:14px;color:var(--green);margin-bottom:10px;min-height:20px;"></div>';
+  for (const [group, chars] of Object.entries(emojiGroups)) {
+    html += `<div style="margin-bottom:14px;"><div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">${group}</div><div style="display:flex;flex-wrap:wrap;gap:4px;">`;
+    for (const c of [...chars]) {
+      if (c.trim()) html += `<span style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--bg-input);border-radius:6px;cursor:pointer;font-size:18px;border:1px solid transparent;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='transparent'" onclick="copyText('${c}');document.getElementById('charClicked').textContent='已复制: ${c}'">${c}</span>`;
+    }
+    html += '</div></div>';
+  }
+  html += '</div>';
+  return html;
+};
+
+// ---- Morse Code ----
+toolRenderers.morse = () => `
+<div class="tool-section">
+  <h3>摩尔斯电码</h3>
+  <textarea class="tool-input" id="morseInput" rows="4" placeholder="输入文本或摩尔斯电码...">Hello World</textarea>
+  <div style="display:flex;gap:8px;margin-top:12px;">
+    <button class="btn btn-primary" onclick="toMorse()">文本→摩尔斯</button>
+    <button class="btn btn-secondary" onclick="fromMorse()">摩尔斯→文本</button>
+  </div>
+</div>
+<div class="tool-section">
+  <h3>结果</h3>
+  <div class="result-box" id="morseResult" style="font-size:16px;letter-spacing:2px;"><button class="copy-btn" onclick="copyText(document.getElementById('morseResult').innerText.trim(),this)">复制</button></div>
+</div>`;
+
+const morseMap = {'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.','F':'..-.','G':'--.','H':'....','I':'..','J':'.---','K':'-.-','L':'.-..','M':'--','N':'-.','O':'---','P':'.--.','Q':'--.-','R':'.-.','S':'...','T':'-','U':'..-','V':'...-','W':'.--','X':'-..-','Y':'-.--','Z':'--..','0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.','?':'..--..','!':'-.-.--','.':'.-.-.-',',':'--..--',' ':' / '};
+const morseReverse = Object.fromEntries(Object.entries(morseMap).map(([k,v]) => [v,k]));
+
+function toMorse() {
+  const text = document.getElementById('morseInput').value.toUpperCase();
+  const result = [...text].map(c => morseMap[c] || c).join(' ');
+  document.getElementById('morseResult').innerHTML = result + `<button class="copy-btn" onclick="copyText(document.getElementById('morseResult').innerText.trim(),this)">复制</button>`;
+}
+
+function fromMorse() {
+  const morse = document.getElementById('morseInput').value;
+  const words = morse.split(' / ');
+  const result = words.map(word => word.split(' ').map(c => morseReverse[c] || c).join('')).join(' ');
+  document.getElementById('morseResult').innerHTML = result + `<button class="copy-btn" onclick="copyText(document.getElementById('morseResult').innerText.trim(),this)">复制</button>`;
+}
+
+// ---- Number Base ----
+toolRenderers.number_base = () => `
+<div class="tool-section">
+  <h3>进制转换</h3>
+  <div class="tool-row cols-2">
+    <div><label class="tool-label">输入数值</label><input class="tool-input" id="baseInput" placeholder="输入数字" value="255" oninput="convertBase()"></div>
+    <div><label class="tool-label">输入进制</label><select class="tool-input" id="baseFrom" onchange="convertBase()"><option value="10" selected>十进制</option><option value="2">二进制</option><option value="8">八进制</option><option value="16">十六进制</option></select></div>
+  </div>
+</div>
+<div class="tool-section">
+  <h3>转换结果</h3>
+  <div id="baseResults" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+</div>`;
+toolInits.number_base = () => convertBase();
+
+function convertBase() {
+  const input = document.getElementById('baseInput').value.trim();
+  const from = parseInt(document.getElementById('baseFrom').value);
+  try {
+    const num = parseInt(input, from);
+    if (isNaN(num)) throw new Error('Invalid');
+    const bases = [
+      { label: '二进制 (BIN)', value: num.toString(2) },
+      { label: '八进制 (OCT)', value: num.toString(8) },
+      { label: '十进制 (DEC)', value: num.toString(10) },
+      { label: '十六进制 (HEX)', value: num.toString(16).toUpperCase() },
+    ];
+    document.getElementById('baseResults').innerHTML = bases.map(b => `
+      <div style="background:var(--bg-input);padding:12px;border-radius:8px;">
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">${b.label}</div>
+        <div style="font-size:18px;font-weight:700;font-family:monospace;word-break:break-all;">${b.value}</div>
+      </div>`).join('');
+  } catch(e) {
+    document.getElementById('baseResults').innerHTML = '<div style="color:var(--red);">请输入有效数字</div>';
+  }
+}
+
+// ---- Image to Base64 ----
+toolRenderers.img_base64 = () => `
+<div class="tool-section">
+  <h3>图片转 Base64</h3>
+  <div style="border:2px dashed var(--border);border-radius:12px;padding:40px;text-align:center;cursor:pointer;" onclick="document.getElementById('imgFileInput').click()" id="imgDropZone">
+    <div style="font-size:36px;margin-bottom:10px;">📁</div>
+    <div style="color:var(--text-secondary);font-size:14px;">点击选择图片或拖拽到此处</div>
+    <input type="file" id="imgFileInput" accept="image/*" style="display:none;" onchange="imgToBase64(this)">
+  </div>
+</div>
+<div class="tool-section" id="imgResult" style="display:none;">
+  <h3>结果</h3>
+  <div style="text-align:center;margin-bottom:12px;"><img id="imgPreview" style="max-width:300px;max-height:200px;border-radius:8px;"></div>
+  <textarea class="tool-input" id="imgBase64Output" rows="6" readonly style="font-size:11px;"></textarea>
+  <div style="display:flex;gap:8px;margin-top:8px;">
+    <button class="btn btn-primary" onclick="copyText(document.getElementById('imgBase64Output').value)">📋 复制Base64</button>
+  </div>
+</div>`;
+
+function imgToBase64(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('imgResult').style.display = '';
+    document.getElementById('imgPreview').src = e.target.result;
+    document.getElementById('imgBase64Output').value = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ---- SVG Preview ----
+toolRenderers.svg_preview = () => `
+<div class="tool-section">
+  <h3>SVG 预览</h3>
+  <div class="tool-row cols-2">
+    <div><label class="tool-label">SVG 代码</label><textarea class="tool-input" id="svgCode" rows="12" oninput="previewSVG()" style="font-family:monospace;font-size:12px;"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="100" cy="100" r="80" fill="#6366f1" opacity="0.3"/>
+  <circle cx="100" cy="100" r="60" fill="#8b5cf6" opacity="0.5"/>
+  <circle cx="100" cy="100" r="40" fill="#a855f7" opacity="0.7"/>
+  <circle cx="100" cy="100" r="20" fill="#c084fc"/>
+  <text x="100" y="105" text-anchor="middle" fill="white" font-size="14" font-weight="bold">SVG</text>
+</svg></textarea></div>
+    <div><label class="tool-label">预览</label><div id="svgPreview" style="background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:20px;min-height:280px;display:flex;align-items:center;justify-content:center;"></div></div>
+  </div>
+</div>`;
+toolInits.svg_preview = () => previewSVG();
+
+function previewSVG() {
+  const code = document.getElementById('svgCode').value;
+  document.getElementById('svgPreview').innerHTML = code;
+}
+
+// ---- Placeholder Image ----
+toolRenderers.placeholder = () => `
+<div class="tool-section">
+  <h3>占位图生成</h3>
+  <div class="tool-row">
+    <div><label class="tool-label">宽度</label><input class="tool-input" id="phW" type="number" value="400"></div>
+    <div><label class="tool-label">高度</label><input class="tool-input" id="phH" type="number" value="300"></div>
+    <div><label class="tool-label">背景色</label><input class="tool-input" id="phBg" type="color" value="#6366f1"></div>
+    <div><label class="tool-label">文字色</label><input class="tool-input" id="phFg" type="color" value="#ffffff"></div>
+  </div>
+  <div class="tool-row" style="align-items:end;">
+    <div style="flex:1;"><label class="tool-label">文字 (留空用尺寸)</label><input class="tool-input" id="phText" placeholder="自定义文字"></div>
+    <button class="btn btn-primary" onclick="genPlaceholder()">生成</button>
+  </div>
+</div>
+<div class="tool-section" style="text-align:center;">
+  <canvas id="phCanvas" style="max-width:100%;border-radius:8px;border:1px solid var(--border);"></canvas>
+  <div style="margin-top:10px;"><button class="btn btn-primary" onclick="downloadPlaceholder()">💾 下载图片</button></div>
+</div>`;
+toolInits.placeholder = () => genPlaceholder();
+
+function genPlaceholder() {
+  const w = parseInt(document.getElementById('phW').value) || 400;
+  const h = parseInt(document.getElementById('phH').value) || 300;
+  const bg = document.getElementById('phBg').value;
+  const fg = document.getElementById('phFg').value;
+  const text = document.getElementById('phText').value || `${w} × ${h}`;
+
+  const canvas = document.getElementById('phCanvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = fg;
+  const fontSize = Math.min(w, h) / 8;
+  ctx.font = `bold ${fontSize}px Inter, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, w/2, h/2);
+}
+
+function downloadPlaceholder() {
+  const canvas = document.getElementById('phCanvas');
+  const link = document.createElement('a');
+  link.download = 'placeholder.png';
+  link.href = canvas.toDataURL();
+  link.click();
+}
+
+// ============== INIT ==============
+init();
+</script>
+</body>
+</html>
