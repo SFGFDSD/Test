@@ -1,0 +1,176 @@
+<!-- JISHENG-OS-APP: {
+  "name": "年度加薪申请系统",
+  "width": 550,
+  "height": 450,
+  "icon": "<svg class='icon-svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'/><circle cx='12' cy='12' r='10' stroke-dasharray='4 4'/></svg>"
+} -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>年度加薪申请系统</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', "Microsoft YaHei", sans-serif;
+            background-color: #f3f5f7;
+            margin: 0;
+            padding: 20px;
+            overflow: hidden; /* 防止按钮跑出屏幕导致滚动条 */
+        }
+        .container {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 30px;
+            height: 350px;
+            position: relative;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+            color: #333;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 12px;
+            color: #888;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: inline-block;
+            width: 100px;
+            color: #555;
+            font-weight: bold;
+        }
+        .form-group input {
+            padding: 8px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            outline: none;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+        }
+        #cancel-btn {
+            background-color: #95a5a6;
+            position: absolute;
+            bottom: 30px;
+            left: 150px;
+        }
+        #cancel-btn:hover {
+            background-color: #7f8c8d;
+        }
+        #submit-btn {
+            background-color: #e74c3c;
+            position: absolute;
+            bottom: 30px;
+            left: 280px;
+            transition: all 0.1s ease; /* 让按钮逃跑时有点动画 */
+            z-index: 999;
+        }
+        .success-screen {
+            display: none;
+            text-align: center;
+            padding-top: 80px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="main-ui">
+        <div class="header">
+            <h1>2024年度员工加薪申请通道</h1>
+            <p>JISHENG OS 人力资源部专属审批终端 (内部绝密)</p>
+        </div>
+
+        <div class="form-group">
+            <label>申请人姓名：</label>
+            <input type="text" placeholder="请输入你的真实姓名">
+        </div>
+        <div class="form-group">
+            <label>所在部门：</label>
+            <input type="text" placeholder="如：研发部 / 设计部">
+        </div>
+        <div class="form-group">
+            <label>期望涨薪：</label>
+            <input type="text" placeholder="请输入数字 (单位：元/月)">
+        </div>
+
+        <!-- 按钮区 -->
+        <button class="btn" id="cancel-btn">放弃加薪</button>
+        <button class="btn" id="submit-btn">确认申请</button>
+    </div>
+
+    <!-- 放弃加薪后的提示 -->
+    <div class="success-screen" id="success-ui">
+        <h1 style="color: #27ae60; font-size: 40px;">✅ 操作成功</h1>
+        <h2 style="color: #333;">您已主动放弃本年度加薪机会！</h2>
+        <p style="color: #666; font-size: 16px;">老板对您的无私奉献表示高度赞赏，您的觉悟已超越99%的员工。</p>
+        <p style="color: #999; margin-top: 30px;">( 本窗口将在 5 秒后自动销毁 )</p>
+    </div>
+
+    <script>
+        const submitBtn = document.getElementById('submit-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const mainUi = document.getElementById('main-ui');
+        const successUi = document.getElementById('success-ui');
+        const container = document.querySelector('.container');
+
+        // 搞笑语录库
+        const jokes = [
+            "想得美", "再上一阵班吧", "公司没钱", 
+            "业绩达标了吗", "老板在后面看你", "点不到我吧", 
+            "年轻人要讲武德", "洗洗睡吧"
+        ];
+
+        // 核心整蛊逻辑：鼠标一碰到就跑
+        submitBtn.addEventListener('mouseover', function() {
+            // 获取容器的边界
+            const maxWidth = container.clientWidth - submitBtn.clientWidth - 20;
+            const maxHeight = container.clientHeight - submitBtn.clientHeight - 20;
+            
+            // 随机生成新的 X 和 Y 坐标 (限制在容器内部)
+            const randomX = Math.max(20, Math.floor(Math.random() * maxWidth));
+            const randomY = Math.max(20, Math.floor(Math.random() * maxHeight));
+            
+            submitBtn.style.left = randomX + 'px';
+            submitBtn.style.top = randomY + 'px';
+            
+            // 随机换一句嘲讽文案
+            submitBtn.innerText = jokes[Math.floor(Math.random() * jokes.length)];
+        });
+
+        // 防破解：万一用户用 Tab 键选中后按回车
+        submitBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            alert("⚠️ 严重错误：检测到您使用外挂手段强行申请！\n处理结果：工资已自动减半。");
+        });
+
+        // 唯一的出路：点击放弃加薪
+        cancelBtn.addEventListener('click', function() {
+            mainUi.style.display = 'none';
+            successUi.style.display = 'block';
+            
+            // 倒计时关闭应用 (模拟真实软件行为)
+            setTimeout(() => {
+                window.close(); 
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
