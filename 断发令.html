@@ -1,0 +1,1996 @@
+<!-- JISHENG-OS-APP: {
+  "name": "断发令",
+  "width": 1280,
+  "height": 850,
+  "icon": "<svg class='icon-svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M6 3c0 0-1 4-1 8s1 8 1 8'/><path d='M18 3c0 0 1 4 1 8s-1 8-1 8'/><line x1='6' y1='11' x2='18' y2='11'/><path d='M9 5l3-2 3 2'/><circle cx='12' cy='17' r='2'/><line x1='12' y1='15' x2='12' y2='11'/></svg>"
+} -->
+<!DOCTYPE html>
+<html lang="zh-CN" data-skin="enigma">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>断发令 · 颅上風雲</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=ZCOOL+KuaiLe&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=Long+Cang&display=swap');
+
+  /* ══════════════════════════════════════
+     CSS VARIABLES — 皮肤系统
+     ══════════════════════════════════════ */
+
+  /* 默认皮肤：谜语人·玄墨 */
+  [data-skin="enigma"] {
+    --bg-primary: #0a0a0c;
+    --bg-secondary: #111116;
+    --bg-card: rgba(18, 18, 24, 0.85);
+    --text-primary: #e8e4dc;
+    --text-secondary: #8a8477;
+    --text-muted: #5a5650;
+    --accent: #c4a35a;
+    --accent-sharp: #ff6b35;
+    --accent-cold: #4a7c8f;
+    --border: rgba(196, 163, 90, 0.15);
+    --noise-opacity: 0.06;
+    --font-display: 'Zhi Mang Xing', cursive;
+    --font-heading: 'Ma Shan Zheng', cursive;
+    --font-body: 'Noto Serif SC', serif;
+    --shadow-drama: 0 20px 80px rgba(0,0,0,0.8), 0 0 120px rgba(196,163,90,0.05);
+    --grid-color: rgba(196, 163, 90, 0.03);
+    --transition-base: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* 皮肤二：霜刃·银灰 */
+  [data-skin="frost"] {
+    --bg-primary: #f0ece4;
+    --bg-secondary: #e6e0d4;
+    --bg-card: rgba(255, 255, 252, 0.9);
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b6560;
+    --text-muted: #a09a90;
+    --accent: #2c3e50;
+    --accent-sharp: #c0392b;
+    --accent-cold: #7f8c8d;
+    --border: rgba(44, 62, 80, 0.12);
+    --noise-opacity: 0.03;
+    --font-display: 'Zhi Mang Xing', cursive;
+    --font-heading: 'Ma Shan Zheng', cursive;
+    --font-body: 'Noto Serif SC', serif;
+    --shadow-drama: 0 10px 60px rgba(0,0,0,0.08), 0 0 80px rgba(44,62,80,0.03);
+    --grid-color: rgba(44, 62, 80, 0.04);
+    --transition-base: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* 皮肤三：血剪·朱殷 */
+  [data-skin="blood"] {
+    --bg-primary: #1a0508;
+    --bg-secondary: #220810;
+    --bg-card: rgba(30, 8, 15, 0.9);
+    --text-primary: #f0d0c0;
+    --text-secondary: #9a6060;
+    --text-muted: #6a3a3a;
+    --accent: #cc2244;
+    --accent-sharp: #ff4466;
+    --accent-cold: #8a3050;
+    --border: rgba(204, 34, 68, 0.15);
+    --noise-opacity: 0.08;
+    --font-display: 'Zhi Mang Xing', cursive;
+    --font-heading: 'Ma Shan Zheng', cursive;
+    --font-body: 'Noto Serif SC', serif;
+    --shadow-drama: 0 20px 80px rgba(0,0,0,0.9), 0 0 120px rgba(204,34,68,0.08);
+    --grid-color: rgba(204, 34, 68, 0.03);
+    --transition-base: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* ══════ 彩蛋皮肤：千禧遗风·Y2K ══════ */
+  [data-skin="y2k"] {
+    --bg-primary: #000080;
+    --bg-secondary: #000066;
+    --bg-card: #c0c0c0;
+    --text-primary: #000000;
+    --text-secondary: #000080;
+    --text-muted: #808080;
+    --accent: #ff00ff;
+    --accent-sharp: #00ff00;
+    --accent-cold: #00ffff;
+    --border: #808080;
+    --noise-opacity: 0;
+    --font-display: 'Comic Sans MS', 'ZCOOL KuaiLe', cursive;
+    --font-heading: 'Comic Sans MS', 'ZCOOL KuaiLe', cursive;
+    --font-body: 'MS Sans Serif', 'SimSun', Tahoma, sans-serif;
+    --shadow-drama: 2px 2px 0 #000;
+    --grid-color: transparent;
+    --transition-base: 0s;
+  }
+
+  /* ══════════════════════════════════════
+     RESET & BASE
+     ══════════════════════════════════════ */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) var(--bg-primary);
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    line-height: 1.8;
+    transition: background var(--transition-base), color var(--transition-base);
+  }
+
+  /* ══════════════════════════════════════
+     NOISE TEXTURE OVERLAY
+     ══════════════════════════════════════ */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    opacity: var(--noise-opacity);
+    pointer-events: none;
+    z-index: 9999;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px;
+  }
+
+  /* Dramatic grid lines background */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background-image:
+      linear-gradient(var(--grid-color) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: 80px 80px;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--bg-primary);
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+
+  /* ══════════════════════════════════════
+     SKIN SWITCHER
+     ══════════════════════════════════════ */
+  .skin-switcher {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .skin-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2);
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .skin-btn:hover {
+    transform: scale(1.3);
+    box-shadow: 0 0 20px rgba(255,255,255,0.3);
+  }
+
+  .skin-btn[data-skin="enigma"] { background: linear-gradient(135deg, #0a0a0c, #c4a35a); }
+  .skin-btn[data-skin="frost"] { background: linear-gradient(135deg, #f0ece4, #2c3e50); }
+  .skin-btn[data-skin="blood"] { background: linear-gradient(135deg, #1a0508, #cc2244); }
+  .skin-btn[data-skin="y2k"] {
+    background: linear-gradient(135deg, #000080, #ff00ff, #00ff00);
+    animation: y2k-hint 3s ease-in-out infinite;
+  }
+
+  @keyframes y2k-hint {
+    0%, 100% { opacity: 0.4; border-color: transparent; }
+    50% { opacity: 1; border-color: #ff00ff; }
+  }
+
+  .skin-label {
+    position: absolute;
+    right: 44px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    font-family: var(--font-body);
+    border: 1px solid var(--border);
+  }
+
+  .skin-btn:hover .skin-label { opacity: 1; }
+
+  /* ══════════════════════════════════════
+     LOADING CURTAIN — 交错揭露
+     ══════════════════════════════════════ */
+  .curtain {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary);
+    transition: opacity 0.8s 0.5s, visibility 0.8s 0.5s;
+  }
+
+  .curtain.lifted {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .curtain-text {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 8vw, 6rem);
+    color: var(--accent);
+    opacity: 0;
+    animation: curtain-reveal 2s 0.3s forwards;
+    text-shadow: 0 0 60px rgba(196,163,90,0.3);
+  }
+
+  .curtain-sub {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 12px;
+    opacity: 0;
+    animation: curtain-reveal 1.5s 1s forwards;
+    letter-spacing: 0.5em;
+  }
+
+  @keyframes curtain-reveal {
+    from { opacity: 0; transform: translateY(20px); filter: blur(10px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0); }
+  }
+
+  /* ══════════════════════════════════════
+     HERO SECTION
+     ══════════════════════════════════════ */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    padding: 60px clamp(20px, 8vw, 120px);
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -30%;
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, rgba(196,163,90,0.04) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  /* 定场诗 */
+  .prologue {
+    font-family: var(--font-heading);
+    font-size: clamp(0.85rem, 1.5vw, 1rem);
+    color: var(--text-muted);
+    letter-spacing: 0.3em;
+    margin-bottom: 40px;
+    line-height: 2.4;
+    max-width: 500px;
+    opacity: 0;
+    transform: translateX(-40px);
+    border-left: 2px solid var(--accent);
+    padding-left: 20px;
+  }
+
+  .prologue.visible {
+    animation: slide-in 1.2s var(--transition-base) forwards;
+  }
+
+  @keyframes slide-in {
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(4rem, 15vw, 12rem);
+    line-height: 0.95;
+    color: var(--text-primary);
+    position: relative;
+    margin-bottom: 30px;
+    opacity: 0;
+  }
+
+  .hero-title.visible {
+    animation: title-emerge 1.8s 0.3s forwards;
+  }
+
+  @keyframes title-emerge {
+    0% { opacity: 0; transform: translateY(60px) skewY(3deg); filter: blur(8px); }
+    60% { opacity: 1; filter: blur(0); }
+    100% { opacity: 1; transform: translateY(0) skewY(0); filter: blur(0); }
+  }
+
+  .hero-title .accent-char {
+    color: var(--accent);
+    text-shadow: 0 0 80px rgba(196,163,90,0.4);
+  }
+
+  .hero-title .ghost-char {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--text-muted);
+    transition: color 0.5s, -webkit-text-stroke 0.5s;
+  }
+
+  .hero-title:hover .ghost-char {
+    color: var(--accent-sharp);
+    -webkit-text-stroke: 0;
+  }
+
+  .hero-subtitle {
+    font-family: var(--font-body);
+    font-size: clamp(0.85rem, 1.2vw, 1.1rem);
+    color: var(--text-secondary);
+    max-width: 420px;
+    margin-left: 8px;
+    opacity: 0;
+    line-height: 2;
+    letter-spacing: 0.08em;
+  }
+
+  .hero-subtitle.visible {
+    animation: slide-in 1.4s 0.8s forwards;
+  }
+
+  /* Floating sigil — 非对称装饰 */
+  .sigil {
+    position: absolute;
+    right: clamp(40px, 12vw, 200px);
+    top: 50%;
+    transform: translateY(-50%) rotate(12deg);
+    width: clamp(200px, 30vw, 420px);
+    height: clamp(200px, 30vw, 420px);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sigil.visible {
+    animation: sigil-appear 2s 1.2s forwards;
+  }
+
+  @keyframes sigil-appear {
+    0% { opacity: 0; transform: translateY(-50%) rotate(12deg) scale(0.7); }
+    100% { opacity: 1; transform: translateY(-50%) rotate(0deg) scale(1); }
+  }
+
+  .sigil::before {
+    content: '✂';
+    font-size: clamp(4rem, 10vw, 8rem);
+    color: var(--accent);
+    opacity: 0.15;
+    animation: sigil-pulse 6s ease-in-out infinite;
+  }
+
+  @keyframes sigil-pulse {
+    0%, 100% { opacity: 0.08; transform: rotate(0deg); }
+    50% { opacity: 0.2; transform: rotate(180deg); }
+  }
+
+  .sigil::after {
+    content: '';
+    position: absolute;
+    inset: 20px;
+    border: 1px dashed var(--border);
+    border-radius: 50%;
+    animation: sigil-spin 30s linear infinite;
+  }
+
+  @keyframes sigil-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Scroll indicator */
+  .scroll-hint {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.5em;
+    animation: scroll-bounce 2s ease-in-out infinite;
+  }
+
+  .scroll-hint::after {
+    content: '';
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+  }
+
+  @keyframes scroll-bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(10px); }
+  }
+
+  /* ══════════════════════════════════════
+     SECTION BASE STYLES
+     ══════════════════════════════════════ */
+  .section {
+    padding: clamp(60px, 10vh, 120px) clamp(20px, 8vw, 120px);
+    position: relative;
+  }
+
+  .section-tag {
+    font-family: var(--font-body);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 0.8em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .section-tag::before {
+    content: '';
+    width: 40px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .section-epigraph {
+    font-family: var(--font-heading);
+    font-size: clamp(0.9rem, 1.3vw, 1.1rem);
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin-bottom: 60px;
+    line-height: 2;
+    letter-spacing: 0.05em;
+  }
+
+  /* Reveal animation for sections */
+  .reveal {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 1s var(--transition-base), transform 1s var(--transition-base);
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.25s; }
+  .reveal-delay-3 { transition-delay: 0.4s; }
+  .reveal-delay-4 { transition-delay: 0.55s; }
+  .reveal-delay-5 { transition-delay: 0.7s; }
+
+  /* ══════════════════════════════════════
+     DIVIDER — 断章 
+     ══════════════════════════════════════ */
+  .divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    gap: 20px;
+    color: var(--text-muted);
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+    letter-spacing: 0.6em;
+  }
+
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    max-width: 200px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+
+  /* ══════════════════════════════════════
+     SERVICES — 剪法九式
+     ══════════════════════════════════════ */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2px;
+  }
+
+  .service-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 48px 36px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all var(--transition-base);
+  }
+
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .service-card:hover::before { transform: scaleX(1); }
+
+  .service-card:hover {
+    background: var(--bg-secondary);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-drama);
+  }
+
+  .service-index {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    color: var(--accent);
+    opacity: 0.12;
+    position: absolute;
+    top: 16px;
+    right: 24px;
+    line-height: 1;
+    transition: opacity 0.4s;
+  }
+
+  .service-card:hover .service-index { opacity: 0.35; }
+
+  .service-name {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    letter-spacing: 0.1em;
+  }
+
+  .service-riddle {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.9;
+    margin-bottom: 20px;
+  }
+
+  .service-price {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-family: var(--font-display);
+  }
+
+  .service-price .currency {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .service-price .amount {
+    font-size: 1.8rem;
+    color: var(--accent);
+  }
+
+  .service-price .unit {
+    font-family: var(--font-body);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+  }
+
+  /* ══════════════════════════════════════
+     MASTERS — 持剪之人 
+     ══════════════════════════════════════ */
+  .masters-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 60px;
+    align-items: start;
+  }
+
+  @media (max-width: 768px) {
+    .masters-layout { grid-template-columns: 1fr; }
+  }
+
+  .master-card {
+    position: relative;
+    padding: 40px;
+    border: 1px solid var(--border);
+    margin-bottom: 30px;
+    background: var(--bg-card);
+    transition: all var(--transition-base);
+    overflow: hidden;
+  }
+
+  .master-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(196,163,90,0.03), transparent);
+    opacity: 0;
+    transition: opacity 0.6s;
+    pointer-events: none;
+  }
+
+  .master-card:hover::after { opacity: 1; }
+
+  .master-card:hover {
+    transform: translateX(8px);
+    border-color: var(--accent);
+  }
+
+  .master-title-line {
+    font-family: var(--font-heading);
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 0.5em;
+    margin-bottom: 16px;
+  }
+
+  .master-name {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .master-verse {
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 2;
+    border-left: 1px solid var(--border);
+    padding-left: 16px;
+    margin-top: 16px;
+  }
+
+  .master-years {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    font-family: var(--font-display);
+    font-size: 3rem;
+    color: var(--accent);
+    opacity: 0.08;
+  }
+
+  .masters-philosophy {
+    position: sticky;
+    top: 100px;
+    padding: 60px 40px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+  }
+
+  .masters-philosophy blockquote {
+    font-family: var(--font-heading);
+    font-size: clamp(1.2rem, 2vw, 1.6rem);
+    color: var(--text-primary);
+    line-height: 2.2;
+    position: relative;
+    padding-left: 24px;
+  }
+
+  .masters-philosophy blockquote::before {
+    content: '「';
+    position: absolute;
+    left: -10px;
+    top: -10px;
+    font-size: 4rem;
+    color: var(--accent);
+    opacity: 0.15;
+    font-family: var(--font-display);
+  }
+
+  .masters-philosophy .attribution {
+    margin-top: 24px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    letter-spacing: 0.4em;
+    text-align: right;
+  }
+
+  /* ══════════════════════════════════════
+     RITUAL — 仪轨·预约
+     ══════════════════════════════════════ */
+  .ritual-section {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ritual-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    min-height: 500px;
+  }
+
+  @media (max-width: 768px) {
+    .ritual-grid { grid-template-columns: 1fr; }
+  }
+
+  .ritual-left {
+    padding: clamp(40px, 6vw, 80px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-right: 1px solid var(--border);
+  }
+
+  .ritual-right {
+    padding: clamp(40px, 6vw, 80px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .ritual-steps {
+    list-style: none;
+    counter-reset: ritual;
+  }
+
+  .ritual-step {
+    counter-increment: ritual;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: all 0.6s;
+  }
+
+  .ritual-step.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .ritual-step::before {
+    content: counter(ritual, cjk-ideographic);
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--accent);
+    min-width: 30px;
+    opacity: 0.4;
+  }
+
+  .step-name {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .step-desc {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  /* CTA Button */
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 40px;
+    padding: 18px 40px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    letter-spacing: 0.3em;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-base);
+  }
+
+  .cta-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    transform: translateX(-101%);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: -1;
+  }
+
+  .cta-btn:hover::before { transform: translateX(0); }
+  .cta-btn:hover { color: var(--bg-primary); }
+
+  .cta-btn .arrow {
+    transition: transform 0.3s;
+  }
+
+  .cta-btn:hover .arrow { transform: translateX(6px); }
+
+  /* ══════════════════════════════════════
+     TESTIMONIALS — 江湖传闻
+     ══════════════════════════════════════ */
+  .testimonials-scroll {
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+    padding: 20px 0 40px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .testimonials-scroll::-webkit-scrollbar { display: none; }
+
+  .testimonial {
+    min-width: 360px;
+    max-width: 400px;
+    scroll-snap-align: start;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 40px 32px;
+    position: relative;
+    flex-shrink: 0;
+    transition: all var(--transition-base);
+  }
+
+  .testimonial:hover {
+    border-color: var(--accent);
+    transform: translateY(-6px);
+  }
+
+  .testimonial-mark {
+    font-family: var(--font-display);
+    font-size: 5rem;
+    color: var(--accent);
+    opacity: 0.08;
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    line-height: 1;
+  }
+
+  .testimonial-text {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    line-height: 2;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .testimonial-author {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 0.3em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .testimonial-author::before {
+    content: '';
+    width: 20px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  /* ══════════════════════════════════════
+     LOCATION — 坐镇何方
+     ══════════════════════════════════════ */
+  .location-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  @media (max-width: 768px) {
+    .location-grid { grid-template-columns: 1fr; }
+  }
+
+  .map-placeholder {
+    aspect-ratio: 16/9;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .map-placeholder::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, var(--border) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, var(--border) 40px);
+  }
+
+  .map-label {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    color: var(--accent);
+    opacity: 0.3;
+    z-index: 1;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .map-label small {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 0.3em;
+    margin-top: 8px;
+  }
+
+  .location-info {
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+
+  .info-item {
+    padding: 24px 28px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.3s;
+  }
+
+  .info-item:last-child { border-bottom: none; }
+
+  .info-item:hover { background: var(--bg-secondary); }
+
+  .info-label {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    letter-spacing: 0.6em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .info-value {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    color: var(--text-primary);
+    line-height: 1.8;
+  }
+
+  /* ══════════════════════════════════════
+     FOOTER — 散场
+     ══════════════════════════════════════ */
+  footer {
+    padding: 80px clamp(20px, 8vw, 120px) 40px;
+    border-top: 1px solid var(--border);
+    position: relative;
+  }
+
+  .footer-verse {
+    font-family: var(--font-heading);
+    font-size: clamp(1.2rem, 2vw, 1.6rem);
+    color: var(--text-secondary);
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 60px;
+    line-height: 2.4;
+  }
+
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer-brand {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--accent);
+    opacity: 0.4;
+  }
+
+  .footer-copy {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+  }
+
+  .footer-easter {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    opacity: 0.3;
+    cursor: help;
+    transition: opacity 0.3s;
+    letter-spacing: 0.15em;
+  }
+
+  .footer-easter:hover {
+    opacity: 1;
+    color: var(--accent-sharp);
+  }
+
+  /* ══════════════════════════════════════
+     Y2K EASTER EGG OVERRIDES
+     ══════════════════════════════════════ */
+  [data-skin="y2k"] body::before { display: none; }
+  [data-skin="y2k"] body::after { display: none; }
+
+  [data-skin="y2k"] .hero { min-height: auto; padding: 20px; }
+
+  [data-skin="y2k"] .section,
+  [data-skin="y2k"] footer { padding: 20px; }
+
+  [data-skin="y2k"] .y2k-banner {
+    display: block !important;
+  }
+
+  .y2k-banner {
+    display: none;
+    background: #ffff00;
+    color: #ff0000;
+    text-align: center;
+    padding: 8px;
+    font-family: 'Comic Sans MS', cursive;
+    font-size: 14px;
+    font-weight: bold;
+    animation: y2k-blink 0.8s steps(1) infinite;
+    border-bottom: 3px solid #ff0000;
+  }
+
+  @keyframes y2k-blink {
+    0%, 49% { background: #ffff00; color: #ff0000; }
+    50%, 100% { background: #ff0000; color: #ffff00; }
+  }
+
+  [data-skin="y2k"] .hero-title,
+  [data-skin="y2k"] .section-title {
+    font-family: 'Comic Sans MS', 'ZCOOL KuaiLe', cursive !important;
+    -webkit-text-stroke: 0;
+    color: #ffff00 !important;
+    text-shadow: 2px 2px #ff00ff, -2px -2px #00ffff;
+  }
+
+  [data-skin="y2k"] .prologue,
+  [data-skin="y2k"] .hero-subtitle,
+  [data-skin="y2k"] .section-epigraph {
+    color: #00ffff !important;
+    border-left-color: #ff00ff !important;
+  }
+
+  [data-skin="y2k"] .sigil { display: none; }
+
+  [data-skin="y2k"] .service-card {
+    background: #c0c0c0 !important;
+    border: 2px outset #ffffff !important;
+    box-shadow: inset 1px 1px 0 #ffffff, inset -1px -1px 0 #808080 !important;
+    transform: none !important;
+  }
+
+  [data-skin="y2k"] .service-card:hover {
+    background: #d4d0c8 !important;
+    transform: none !important;
+  }
+
+  [data-skin="y2k"] .service-name { color: #000080 !important; }
+
+  [data-skin="y2k"] .service-price .amount {
+    color: #ff0000 !important;
+    font-family: 'Comic Sans MS', cursive !important;
+  }
+
+  [data-skin="y2k"] .master-card {
+    background: #c0c0c0 !important;
+    border: 2px outset #ffffff !important;
+    box-shadow: inset 1px 1px 0 #ffffff, inset -1px -1px 0 #808080 !important;
+  }
+
+  [data-skin="y2k"] .cta-btn {
+    background: #c0c0c0 !important;
+    border: 2px outset #ffffff !important;
+    color: #000000 !important;
+    font-family: 'MS Sans Serif', Tahoma, sans-serif !important;
+    box-shadow: inset 1px 1px 0 #ffffff, inset -1px -1px 0 #808080;
+  }
+
+  [data-skin="y2k"] .cta-btn:active {
+    border-style: inset !important;
+  }
+
+  [data-skin="y2k"] .cta-btn::before { display: none; }
+
+  [data-skin="y2k"] .testimonial {
+    background: #ffffff !important;
+    border: 1px solid #000000 !important;
+    color: #000000 !important;
+  }
+
+  [data-skin="y2k"] .divider {
+    color: #ff00ff !important;
+  }
+
+  [data-skin="y2k"] .scroll-hint { display: none; }
+
+  [data-skin="y2k"] .y2k-marquee { display: block !important; }
+
+  .y2k-marquee {
+    display: none;
+    background: #000080;
+    color: #00ff00;
+    padding: 6px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .y2k-marquee-inner {
+    display: inline-block;
+    animation: marquee-scroll 20s linear infinite;
+  }
+
+  @keyframes marquee-scroll {
+    from { transform: translateX(100vw); }
+    to { transform: translateX(-100%); }
+  }
+
+  [data-skin="y2k"] .y2k-counter { display: block !important; }
+
+  .y2k-counter {
+    display: none;
+    text-align: center;
+    padding: 16px;
+    font-family: 'Courier New', monospace;
+    color: #00ff00;
+    background: #000000;
+    border: 2px inset #808080;
+    margin: 16px auto;
+    max-width: 320px;
+    font-size: 13px;
+  }
+
+  .y2k-counter img { vertical-align: middle; }
+
+  [data-skin="y2k"] .y2k-guestbook { display: block !important; }
+
+  .y2k-guestbook {
+    display: none;
+    text-align: center;
+    margin: 20px auto;
+    padding: 12px;
+    max-width: 400px;
+    background: #c0c0c0;
+    border: 2px outset #ffffff;
+    font-family: 'MS Sans Serif', Tahoma, sans-serif;
+    font-size: 13px;
+    color: #000080;
+  }
+
+  .y2k-guestbook a {
+    color: #0000ff !important;
+    text-decoration: underline !important;
+  }
+
+  [data-skin="y2k"] .ritual-section {
+    background: #000080 !important;
+    border-color: #808080 !important;
+  }
+
+  [data-skin="y2k"] .ritual-step::before {
+    color: #ffff00 !important;
+  }
+
+  [data-skin="y2k"] .step-name { color: #ffffff !important; }
+  [data-skin="y2k"] .step-desc { color: #c0c0c0 !important; }
+
+  [data-skin="y2k"] .map-placeholder {
+    background: #008080 !important;
+    border: 2px inset #808080 !important;
+  }
+
+  [data-skin="y2k"] .map-label {
+    color: #ffff00 !important;
+    font-family: 'Comic Sans MS', cursive !important;
+    opacity: 1;
+  }
+
+  [data-skin="y2k"] .info-item {
+    background: #c0c0c0;
+    border-color: #808080 !important;
+  }
+
+  [data-skin="y2k"] .location-info {
+    border: 2px outset #ffffff !important;
+  }
+
+  [data-skin="y2k"] footer {
+    background: #000080;
+    border-top: 3px double #808080 !important;
+  }
+
+  [data-skin="y2k"] .footer-verse { color: #00ffff !important; }
+  [data-skin="y2k"] .footer-brand { color: #ff00ff !important; opacity: 1; }
+  [data-skin="y2k"] .footer-copy { color: #808080 !important; }
+
+  [data-skin="y2k"] .curtain { display: none; }
+
+  [data-skin="y2k"] .noise-overlay { display: none; }
+
+  [data-skin="y2k"] .skin-btn { border-color: #ffffff; }
+
+  /* Y2K window title bar */
+  [data-skin="y2k"] .y2k-titlebar { display: flex !important; }
+
+  .y2k-titlebar {
+    display: none;
+    align-items: center;
+    background: linear-gradient(90deg, #000080, #1084d0);
+    color: #ffffff;
+    padding: 3px 6px;
+    font-family: 'MS Sans Serif', Tahoma, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .y2k-titlebar-buttons {
+    margin-left: auto;
+    display: flex;
+    gap: 2px;
+  }
+
+  .y2k-titlebar-btn {
+    width: 16px;
+    height: 14px;
+    background: #c0c0c0;
+    border: 1px outset #ffffff;
+    font-size: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-family: 'Marlett', sans-serif;
+  }
+
+  /* ══════════════════════════════════════
+     RESPONSIVE
+     ══════════════════════════════════════ */
+  @media (max-width: 768px) {
+    .sigil { display: none; }
+    .services-grid { grid-template-columns: 1fr; }
+    .location-grid { grid-template-columns: 1fr; }
+    .ritual-grid { grid-template-columns: 1fr; }
+    .ritual-left { border-right: none; border-bottom: 1px solid var(--border); }
+    .testimonial { min-width: 85vw; }
+
+    .footer-bottom { flex-direction: column; text-align: center; }
+  }
+
+  /* ══════════════════════════════════════
+     CUSTOM CURSOR for enigma/blood
+     ══════════════════════════════════════ */
+  [data-skin="enigma"] *, [data-skin="blood"] * {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='3' fill='none' stroke='%23c4a35a' stroke-width='1'/%3E%3Ccircle cx='10' cy='10' r='1' fill='%23c4a35a'/%3E%3C/svg%3E") 10 10, crosshair;
+  }
+
+  /* ══════════════════════════════════════
+     GLITCH HOVER for section titles
+     ══════════════════════════════════════ */
+  .glitch-hover {
+    position: relative;
+    display: inline-block;
+  }
+
+  .glitch-hover:hover {
+    animation: glitch-text 0.3s ease-in-out;
+  }
+
+  @keyframes glitch-text {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(2px, -2px); }
+    60% { transform: translate(-1px, -1px); }
+    80% { transform: translate(1px, 1px); }
+    100% { transform: translate(0); }
+  }
+
+  /* Ambient floating particles */
+  .particle {
+    position: fixed;
+    width: 2px;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 1;
+    animation: float-particle 8s ease-in-out infinite;
+  }
+
+  @keyframes float-particle {
+    0% { opacity: 0; transform: translateY(100vh) scale(0); }
+    10% { opacity: 0.3; }
+    90% { opacity: 0.1; }
+    100% { opacity: 0; transform: translateY(-100px) scale(1); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Ambient particles -->
+<div class="particle" style="left:10%;animation-delay:0s;animation-duration:9s"></div>
+<div class="particle" style="left:25%;animation-delay:2s;animation-duration:7s"></div>
+<div class="particle" style="left:50%;animation-delay:4s;animation-duration:11s"></div>
+<div class="particle" style="left:70%;animation-delay:1s;animation-duration:8s"></div>
+<div class="particle" style="left:85%;animation-delay:3s;animation-duration:10s"></div>
+<div class="particle" style="left:40%;animation-delay:5s;animation-duration:6s"></div>
+
+<!-- SKIN SWITCHER -->
+<div class="skin-switcher">
+  <button class="skin-btn" data-skin="enigma" onclick="switchSkin('enigma')" title="玄墨">
+    <span class="skin-label">玄墨 · 默认</span>
+  </button>
+  <button class="skin-btn" data-skin="frost" onclick="switchSkin('frost')" title="霜刃">
+    <span class="skin-label">霜刃 · 银灰</span>
+  </button>
+  <button class="skin-btn" data-skin="blood" onclick="switchSkin('blood')" title="血剪">
+    <span class="skin-label">血剪 · 朱殷</span>
+  </button>
+  <button class="skin-btn" data-skin="y2k" onclick="switchSkin('y2k')" title="???">
+    <span class="skin-label">？？？</span>
+  </button>
+</div>
+
+<!-- LOADING CURTAIN -->
+<div class="curtain" id="curtain">
+  <div style="text-align:center;">
+    <div class="curtain-text">断发令</div>
+    <div class="curtain-sub">颅上風雲 · 即刻开启</div>
+  </div>
+</div>
+
+<!-- Y2K ELEMENTS (hidden by default) -->
+<div class="y2k-titlebar">
+  <span>🌐 断发令理发店 - Microsoft Internet Explorer</span>
+  <div class="y2k-titlebar-buttons">
+    <span class="y2k-titlebar-btn">_</span>
+    <span class="y2k-titlebar-btn">□</span>
+    <span class="y2k-titlebar-btn">✕</span>
+  </div>
+</div>
+
+<div class="y2k-banner">
+  ✂️ ★★★ 欢迎光临断发令理发店！！！本站最佳浏览分辨率 800×600 ★★★ ✂️
+</div>
+
+<div class="y2k-marquee">
+  <span class="y2k-marquee-inner">
+    ★☆★ 热烈庆祝本店开业三周年！！！剪发八折优惠！！！染发送护理！！！欢迎加入QQ群：88888888 ★☆★ 本网站由小明同学制作 ★ 未经许可不得转载 ★ 您是第 <span id="visitor-count">039827</span> 位访客 ★☆★
+  </span>
+</div>
+
+<!-- ═══════════════════════════════
+     HERO — 开篇·定场诗
+     ═══════════════════════════════ -->
+<section class="hero" id="hero">
+
+  <div class="prologue reveal">
+    三千烦恼挂两鬓，<br>
+    一剪落时万缘清。<br>
+    莫道青丝非法器，<br>
+    此间刀法断浮生。
+  </div>
+
+  <h1 class="hero-title reveal">
+    <span class="accent-char">断</span>发<span class="ghost-char">令</span>
+  </h1>
+
+  <p class="hero-subtitle reveal">
+    「凡入此门者，须知——<br>
+    颅上三千丝，每一根皆有其宿命。<br>
+    吾等非理发匠，乃断丝裁命之人。」
+  </p>
+
+  <div class="sigil reveal"></div>
+
+  <div class="scroll-hint">
+    垂目而观
+  </div>
+</section>
+
+<div class="y2k-counter">
+  <p>📊 本页面已被访问</p>
+  <p style="font-size:24px;color:#ff0000;margin:8px 0" id="counter-display">| 0 | 3 | 9 | 8 | 2 | 7 |</p>
+  <p>次！感谢您的来访 ^_^</p>
+</div>
+
+<!-- ═══════════════════════════════
+     SERVICES — 剪法九式
+     ═══════════════════════════════ -->
+<div class="divider reveal">断 · 章 · 壹</div>
+
+<section class="section" id="services">
+  <div class="section-tag reveal">以法则为刃</div>
+  <h2 class="section-title reveal glitch-hover">剪法九式</h2>
+  <p class="section-epigraph reveal">
+    「世间剪法千万种，归根不过断与留。<br>
+    断者，明志也；留者，念旧也。<br>
+    二者之间，方见匠心。」
+  </p>
+
+  <div class="services-grid">
+
+    <div class="service-card reveal reveal-delay-1">
+      <span class="service-index">壹</span>
+      <div class="service-name">净颅令</div>
+      <div class="service-riddle">
+        最朴素的法则，亦是最凶险的考验。<br>
+        无遮无掩，毫厘之差即为谬误。<br>
+        「大道至简，简至一剪。」
+      </div>
+      <div class="service-price">
+        <span class="currency">纹银</span>
+        <span class="amount">68</span>
+        <span class="unit">每局</span>
+      </div>
+    </div>
+
+    <div class="service-card reveal reveal-delay-2">
+      <span class="service-index">贰</span>
+      <div class="service-name">裁云术</div>
+      <div class="service-riddle">
+        发如层云，需以巧劲化之。<br>
+        层次之间暗藏乾坤——<br>
+        「看似随意，实则每一刀皆是注定。」
+      </div>
+      <div class="service-price">
+        <span class="currency">纹银</span>
+        <span class="amount">128</span>
+        <span class="unit">每局</span>
+      </div>
+    </div>
+
+    <div class="service-card reveal reveal-delay-3">
+      <span class="service-index">叁</span>
+      <div class="service-name">染墨经</div>
+      <div class="service-riddle">
+        以五色入三千丝，<br>
+        非染发，乃重写命格之色。<br>
+        「青者隐，赤者燃，墨者——不可说。」
+      </div>
+      <div class="service-price">
+        <span class="currency">纹银</span>
+        <span class="amount">288</span>
+        <span class="unit">每卷</span>
+      </div>
+    </div>
+
+    <div class="service-card reveal reveal-delay-4">
+      <span class="service-index">肆</span>
+      <div class="service-name">塑形咒</div>
+      <div class="service-riddle">
+        以热力重铸丝之走向，<br>
+        卷或直，皆是对抗天命的姿态。<br>
+        「汝之形，由汝定。」
+      </div>
+      <div class="service-price">
+        <span class="currency">纹银</span>
+        <span class="amount">388</span>
+        <span class="unit">每咒</span>
+      </div>
+    </div>
+
+    <div class="service-card reveal reveal-delay-5">
+      <span class="service-index">伍</span>
+      <div class="service-name">养根诀</div>
+      <div class="service-riddle">
+        根基不牢，万法皆空。<br>
+        以天地精华养护发之本源——<br>
+        「欲使其锋利，先令其深植。」
+      </div>
+      <div class="service-price">
+        <span class="currency">纹银</span>
+        <span class="amount">198</span>
+        <span class="unit">每修</span>
+      </div>
+    </div>
+
+    <div class="service-card reveal reveal-delay-5">
+      <span class="service-index">陆</span>
+      <div class="service-name">全仪大典</div>
+      <div class="service-riddle">
+        剪、染、塑、养——四法合一。<br>
+        此乃本门至高仪轨。<br>
+        「凡经此典者，面目全非，焕然重生。」
+      </div>
+      <div class="service-price">
+        <span class="currency">纹银</span>
+        <span class="amount">688</span>
+        <span class="unit">每典</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════
+     MASTERS — 持剪之人
+     ═══════════════════════════════ -->
+<div class="divider reveal">断 · 章 · 贰</div>
+
+<section class="section" id="masters">
+  <div class="section-tag reveal">持剪之人</div>
+  <h2 class="section-title reveal glitch-hover">三位法师</h2>
+  <p class="section-epigraph reveal">
+    「刃者，器也。持刃者，方为法则本身。<br>
+    此间三人，各怀绝技，各有执念。」
+  </p>
+
+  <div class="masters-layout">
+    <div>
+
+      <div class="master-card reveal reveal-delay-1">
+        <span class="master-years">拾柒</span>
+        <div class="master-title-line">首席 · 断发宗师</div>
+        <div class="master-name">陆无声</div>
+        <div class="master-verse">
+          「十七年前入此道，剪过的头颅已逾万。<br>
+          人问其术，答曰：无声。<br>
+          剪刀过处，发丝自落——不需多言。」<br>
+          <br>
+          擅长：净颅令 · 裁云术 · 全仪大典
+        </div>
+      </div>
+
+      <div class="master-card reveal reveal-delay-2">
+        <span class="master-years">拾贰</span>
+        <div class="master-title-line">色道 · 染墨执事</div>
+        <div class="master-name">苏渡染</div>
+        <div class="master-verse">
+          「色有七道，人有七情。<br>
+          以何色覆何丝，便是在改写何种情绪。<br>
+          她说：我不是在染发，我是在帮你换一种活法。」<br>
+          <br>
+          擅长：染墨经 · 塑形咒 · 养根诀
+        </div>
+      </div>
+
+      <div class="master-card reveal reveal-delay-3">
+        <span class="master-years">捌</span>
+        <div class="master-title-line">新锐 · 破格之人</div>
+        <div class="master-name">柏锐</div>
+        <div class="master-verse">
+          「八年不长，但足够打碎所有旧规矩。<br>
+          他的剪法没有名字，因为每一次都是新的。<br>
+          客人说：他剪的不是发型，是态度。」<br>
+          <br>
+          擅长：一切规则之外的事物
+        </div>
+      </div>
+
+    </div>
+
+    <div class="masters-philosophy reveal reveal-delay-2">
+      <blockquote>
+        世人皆以为理发乃小道，<br>
+        殊不知——<br>
+        一个人愿意将头颅交于他人之手，<br>
+        这份信任，比任何契约都重。<br><br>
+        吾等受此重托，<br>
+        故以法则为刃，以敬畏为心。<br>
+        每一剪，皆是对信任的回应。
+      </blockquote>
+      <div class="attribution">—— 断发令 · 门训</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════
+     TESTIMONIALS — 江湖传闻
+     ═══════════════════════════════ -->
+<div class="divider reveal">断 · 章 · 叁</div>
+
+<section class="section" id="testimonials">
+  <div class="section-tag reveal">江湖传闻</div>
+  <h2 class="section-title reveal glitch-hover">人言如丝</h2>
+  <p class="section-epigraph reveal">
+    「汝等凡人之言辞，吾等铭刻于壁。<br>
+    非为虚名，乃为自省。」
+  </p>
+
+  <div class="testimonials-scroll reveal">
+
+    <div class="testimonial">
+      <span class="testimonial-mark">云</span>
+      <div class="testimonial-text">
+        「进门时我说想剪短一点。陆师傅看了我三秒，说：你需要的不是短，是轻。剪完我照镜子——他是对的。那种轻，是心里的。」
+      </div>
+      <div class="testimonial-author">某 · 困于旧发型三年之人</div>
+    </div>
+
+    <div class="testimonial">
+      <span class="testimonial-mark">风</span>
+      <div class="testimonial-text">
+        「苏渡染给我调的颜色，色卡上找不到。她说这个颜色叫'清晨犹豫'。我不懂，但同事第二天问我是不是恋爱了。」
+      </div>
+      <div class="testimonial-author">某 · 在深夜加班后预约染发之人</div>
+    </div>
+
+    <div class="testimonial">
+      <span class="testimonial-mark">雷</span>
+      <div class="testimonial-text">
+        「柏锐剪发时全程没说一句话，放了一首我从没听过的歌。剪完他说：这首歌的节奏就是你头发该有的节奏。我至今没搜到那首歌。」
+      </div>
+      <div class="testimonial-author">某 · 对发型已放弃治疗之人</div>
+    </div>
+
+    <div class="testimonial">
+      <span class="testimonial-mark">雨</span>
+      <div class="testimonial-text">
+        「带我妈来的。她一辈子只去楼下十五块的店。陆师傅给她剪完，她对着镜子笑了很久，然后很小声说了句：原来我也可以好看。」
+      </div>
+      <div class="testimonial-author">某 · 偷偷抹泪的子女</div>
+    </div>
+
+    <div class="testimonial">
+      <span class="testimonial-mark">霜</span>
+      <div class="testimonial-text">
+        「我问能不能剪成某明星的发型。他们说：可以，但你确定要活在别人的轮廓里？后来剪了一个只属于我的。谢谢。」
+      </div>
+      <div class="testimonial-author">某 · 从此不再拿照片参考的人</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════
+     RITUAL — 仪轨·预约
+     ═══════════════════════════════ -->
+<section class="section ritual-section" id="ritual">
+  <div class="ritual-grid">
+
+    <div class="ritual-left">
+      <div class="section-tag reveal">入门仪轨</div>
+      <h2 class="section-title reveal glitch-hover">叩门之法</h2>
+      <p class="section-epigraph reveal">
+        「欲断三千丝，先行五重礼。<br>
+        此非繁文缛节，乃是对技艺的尊重。」
+      </p>
+
+      <ol class="ritual-steps">
+        <li class="ritual-step reveal reveal-delay-1">
+          <div>
+            <div class="step-name">传书预约</div>
+            <div class="step-desc">以电话或微信递上拜帖，告知欲行何法、所选何人。临时叩门者，需候于侧。</div>
+          </div>
+        </li>
+        <li class="ritual-step reveal reveal-delay-2">
+          <div>
+            <div class="step-name">净手候席</div>
+            <div class="step-desc">入门后先净手，奉上清茶一盏。此间片刻宁静，是喧嚣与技艺之间的结界。</div>
+          </div>
+        </li>
+        <li class="ritual-step reveal reveal-delay-3">
+          <div>
+            <div class="step-name">面诊问丝</div>
+            <div class="step-desc">法师将观汝面相、发质、气韵，不急下剪。此为"望闻问切"之理发古法。</div>
+          </div>
+        </li>
+        <li class="ritual-step reveal reveal-delay-4">
+          <div>
+            <div class="step-name">行法断丝</div>
+            <div class="step-desc">此间禁喧哗。法师运剪如行书，每一刀皆有节奏。请信任沉默的力量。</div>
+          </div>
+        </li>
+        <li class="ritual-step reveal reveal-delay-5">
+          <div>
+            <div class="step-name">照镜封印</div>
+            <div class="step-desc">法毕，持镜三照——正面观其形，侧面观其势，背面观其魂。满意方可离席。</div>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="ritual-right" style="display:flex;flex-direction:column;justify-content:center;align-items:center;">
+      <div class="reveal" style="text-align:center;max-width:380px;">
+        <div style="font-family:var(--font-display);font-size:3rem;color:var(--accent);margin-bottom:16px;opacity:0.2">✂</div>
+        <div style="font-family:var(--font-heading);font-size:1.2rem;color:var(--text-primary);line-height:2.4;margin-bottom:30px;">
+          「若汝已下定决心，<br>
+          愿将三千烦恼交付于此——<br>
+          请叩门。」
+        </div>
+
+        <button class="cta-btn" onclick="alert('📞 致电：138-0000-XXXX\n📱 微信：DuanFaLing\n\n「汝之诚意，吾已知悉。」')">
+          传书预约
+          <span class="arrow">→</span>
+        </button>
+
+        <div style="margin-top:30px;font-size:0.7rem;color:var(--text-muted);letter-spacing:0.2em;line-height:2;">
+          营业时辰：辰时至酉时（10:00 - 21:00）<br>
+          逢周一闭门修炼
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="y2k-guestbook">
+  <p>📝 <a href="javascript:void(0)" onclick="alert('留言板功能开发中...敬请期待！')">点击进入留言板</a> | 📧 <a href="mailto:duanfaling@163.com">给站长写信</a></p>
+  <p style="font-size:11px;color:#808080;margin-top:4px">本站已运行 <span style="color:#ff0000">2,847</span> 天 | Powered by 网易免费空间</p>
+</div>
+
+<!-- ═══════════════════════════════
+     LOCATION — 坐镇何方
+     ═══════════════════════════════ -->
+<div class="divider reveal">断 · 章 · 肆</div>
+
+<section class="section" id="location">
+  <div class="section-tag reveal">坐镇何方</div>
+  <h2 class="section-title reveal glitch-hover">寻路指引</h2>
+  <p class="section-epigraph reveal">
+    「此地不在闹市，亦不在深山。<br>
+    它只在——你决定改变的那一刻出现。」
+  </p>
+
+  <div class="location-grid reveal">
+
+    <div class="map-placeholder">
+      <div class="map-label">
+        此处留白<br>即为地图
+        <small>北纬 XX°XX′ 东经 XXX°XX′</small>
+      </div>
+    </div>
+
+    <div class="location-info">
+      <div class="info-item">
+        <div class="info-label">门牌</div>
+        <div class="info-value">某城某区某街 · 不起眼的第七间铺</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">营业时辰</div>
+        <div class="info-value">
+          辰时至酉时<br>
+          （10:00 — 21:00）<br>
+          逢周一闭关
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">传书</div>
+        <div class="info-value">138-0000-XXXX</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">飞鸽</div>
+        <div class="info-value">微信搜「断发令」即可</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">禁忌</div>
+        <div class="info-value" style="color:var(--accent-sharp);">
+          请勿迟到。<br>
+          迟到者，需重新排队候法。<br>
+          此为铁律，无人可破。
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════
+     FOOTER — 散场扣子
+     ═══════════════════════════════ -->
+<footer>
+  <div class="footer-verse reveal">
+    「各位看官——<br>
+    今日书说到此，暂且收住。<br>
+    那位被剪了一半头发的客人，<br>
+    他后来怎样了？<br><br>
+    欲知后事如何，<br>
+    且听下回分解。」<br>
+    <span style="font-size:0.7em;opacity:0.5">——散场诗 · 断发令</span>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-brand">断发令</div>
+    <div class="footer-copy">颅上風雲 · 以法则为刃 · MMXXV</div>
+    <div class="footer-easter" onclick="switchSkin('y2k')" title="此处有蹊跷...">
+      ※ 连点此处三次，或许能窥见千年前的真相 ※
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ══════════════════════════════════════
+  // CURTAIN LIFT
+  // ══════════════════════════════════════
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.getElementById('curtain').classList.add('lifted');
+    }, 2800);
+
+    // Trigger hero animations
+    setTimeout(() => {
+      document.querySelectorAll('.hero .reveal').forEach(el => {
+        el.classList.add('visible');
+      });
+    }, 3200);
+  });
+
+  // ══════════════════════════════════════
+  // SCROLL REVEAL — Intersection Observer
+  // ══════════════════════════════════════
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  });
+
+  document.querySelectorAll('.reveal:not(.hero .reveal)').forEach(el => {
+    observer.observe(el);
+  });
+
+  // ══════════════════════════════════════
+  // SKIN SWITCHER
+  // ══════════════════════════════════════
+  function switchSkin(skin) {
+    const html = document.documentElement;
+    const currentSkin = html.getAttribute('data-skin');
+
+    if (skin === 'y2k' && currentSkin !== 'y2k') {
+      // Easter egg activation effect
+      document.body.style.transition = 'none';
+      document.body.style.filter = 'brightness(10)';
+      setTimeout(() => {
+        html.setAttribute('data-skin', skin);
+        document.body.style.filter = 'brightness(1)';
+        document.body.style.transition = '';
+
+        // Increment visitor counter for fun
+        const countEl = document.getElementById('visitor-count');
+        if (countEl) {
+          let count = parseInt(countEl.textContent) + 1;
+          countEl.textContent = String(count).padStart(6, '0');
+        }
+      }, 150);
+    } else {
+      html.setAttribute('data-skin', skin);
+    }
+
+    // Store preference
+    localStorage.setItem('duanfaling-skin', skin);
+  }
+
+  // Load saved skin
+  const savedSkin = localStorage.getItem('duanfaling-skin');
+  if (savedSkin) {
+    document.documentElement.setAttribute('data-skin', savedSkin);
+    if (savedSkin === 'y2k') {
+      document.getElementById('curtain').style.display = 'none';
+    }
+  }
+
+  // ══════════════════════════════════════
+  // EASTER EGG — Triple click detection
+  // ══════════════════════════════════════
+  let clickCount = 0;
+  let clickTimer = null;
+
+  document.querySelector('.footer-easter').addEventListener('click', () => {
+    clickCount++;
+    if (clickTimer) clearTimeout(clickTimer);
+
+    if (clickCount >= 3) {
+      clickCount = 0;
+      switchSkin('y2k');
+    } else {
+      clickTimer = setTimeout(() => { clickCount = 0; }, 800);
+    }
+  });
+
+  // ══════════════════════════════════════
+  // KONAMI CODE Easter Egg → Y2K skin
+  // ══════════════════════════════════════
+  const konami = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
+  let konamiIndex = 0;
+
+  document.addEventListener('keydown', (e) => {
+    if (e.keyCode === konami[konamiIndex]) {
+      konamiIndex++;
+      if (konamiIndex === konami.length) {
+        konamiIndex = 0;
+        switchSkin('y2k');
+        alert('🕹️ 秘技发动！\n\n欢迎回到千禧年。\n您的 Netscape Navigator 已就绪。');
+      }
+    } else {
+      konamiIndex = 0;
+    }
+  });
+
+  // ══════════════════════════════════════
+  // PARALLAX subtle effect on hero
+  // ══════════════════════════════════════
+  window.addEventListener('mousemove', (e) => {
+    if (document.documentElement.getAttribute('data-skin') === 'y2k') return;
+
+    const sigil = document.querySelector('.sigil');
+    if (!sigil) return;
+
+    const x = (e.clientX / window.innerWidth - 0.5) * 20;
+    const y = (e.clientY / window.innerHeight - 0.5) * 20;
+
+    sigil.style.transform = `translateY(calc(-50% + ${y}px)) rotate(${x * 0.3}deg)`;
+  });
+
+  // ══════════════════════════════════════
+  // Visitor counter animation for Y2K
+  // ══════════════════════════════════════
+  setInterval(() => {
+    if (document.documentElement.getAttribute('data-skin') === 'y2k') {
+      const el = document.getElementById('counter-display');
+      if (el) {
+        let num = parseInt(el.textContent.replace(/[^0-9]/g, ''));
+        num += Math.floor(Math.random() * 3);
+        const str = String(num).padStart(6, '0');
+        el.textContent = '| ' + str.split('').join(' | ') + ' |';
+
+        const vc = document.getElementById('visitor-count');
+        if (vc) vc.textContent = str;
+      }
+    }
+  }, 5000);
+
+</script>
+
+</body>
+</html>
