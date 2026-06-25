@@ -1,0 +1,1753 @@
+<!-- JISHENG-OS-APP: {"name":"条漫阅","width":1280,"height":820,"icon":"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.6'><path d='M4 4.5c0-.28.22-.5.5-.5h11c1.38 0 2.5 1.12 2.5 2.5v13c0 .28-.22.5-.5.5H6.5C5.12 20 4 18.88 4 17.5V4.5z'/><path d='M7 4v13.5M17.5 6.5H19c.55 0 1 .45 1 1V19c0 1.1-.9 2-2 2H7.5'/><path d='M9 8h6M9 11h6M9 14h4'/></svg>"} -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>条漫阅 · JISHENG OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,500&family=JetBrains+Mono:wght@400;600&family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@400;600;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0b0c10;
+    --ink-2: #13141a;
+    --ink-3: #1c1e26;
+    --ink-line: #2a2d38;
+    --paper: #f0e6cf;
+    --paper-dim: #d9cfb4;
+    --paper-ink: #2a2820;
+    --cinnabar: #c24136;
+    --cinnabar-glow: #e85d4e;
+    --cinnabar-deep: #8a2a22;
+    --jade: #4a8778;
+    --jade-glow: #6db5a2;
+    --gold: #c9a961;
+    --mist: #8a8578;
+    --mist-2: #5a574d;
+    --danger: #d4534b;
+    --radius: 3px;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+    --serif-jp: "Shippori Mincho", "Noto Serif SC", serif;
+    --serif-cn: "Noto Serif SC", "ZCOOL XiaoWei", serif;
+    --display: "Fraunces", "Shippori Mincho", serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: var(--serif-cn);
+    background: var(--ink);
+    color: var(--paper);
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+    letter-spacing: .02em;
+  }
+
+  /* ---------- 背景纹理 ---------- */
+  .grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+    opacity: .06; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/></svg>");
+  }
+  .bg-atmos {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(194,65,54,.08), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(74,135,120,.06), transparent 60%),
+      linear-gradient(180deg, #0a0b0f 0%, #0b0c10 100%);
+  }
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(240,230,207,.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(240,230,207,.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+  }
+
+  /* ---------- 布局 ---------- */
+  #app {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    height: 100vh;
+  }
+
+  /* ---------- 侧 rail ---------- */
+  .rail {
+    border-right: 1px solid var(--ink-line);
+    background: linear-gradient(180deg, rgba(19,20,26,.9), rgba(11,12,16,.95));
+    display: flex; flex-direction: column; align-items: center;
+    padding: 18px 0;
+    gap: 6px;
+  }
+  .brand {
+    width: 40px; height: 40px;
+    display: grid; place-items: center;
+    border: 1px solid var(--cinnabar);
+    color: var(--cinnabar-glow);
+    font-family: var(--display); font-weight: 800;
+    font-size: 18px;
+    background: radial-gradient(circle at 30% 30%, rgba(194,65,54,.25), transparent 70%);
+    margin-bottom: 14px;
+    position: relative;
+    clip-path: polygon(0 0, 100% 0, 100% 75%, 88% 100%, 0 100%);
+  }
+  .brand::after{
+    content:""; position:absolute; right:3px; bottom:3px; width:6px; height:6px;
+    background: var(--cinnabar); transform: rotate(45deg);
+  }
+  .rail-btn {
+    width: 44px; height: 44px;
+    display: grid; place-items: center;
+    color: var(--mist);
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    transition: all .2s ease;
+    position: relative;
+  }
+  .rail-btn:hover { color: var(--paper); background: rgba(240,230,207,.04); border-color: var(--ink-line); }
+  .rail-btn.active { color: var(--cinnabar-glow); background: rgba(194,65,54,.08); border-color: var(--cinnabar-deep); }
+  .rail-btn.active::before {
+    content:""; position: absolute; left: -1px; top: 8px; bottom: 8px; width: 2px;
+    background: var(--cinnabar);
+    box-shadow: 0 0 8px var(--cinnabar-glow);
+  }
+  .rail-btn svg { width: 20px; height: 20px; }
+  .rail-spacer { flex: 1; }
+  .rail-label {
+    font-family: var(--mono); font-size: 9px;
+    writing-mode: vertical-rl;
+    color: var(--mist-2); letter-spacing: .3em;
+    margin-top: 16px;
+  }
+
+  /* ---------- 主区 ---------- */
+  .main { position: relative; overflow: hidden; }
+
+  /* ---------- 顶栏 ---------- */
+  .topbar {
+    height: 48px;
+    border-bottom: 1px solid var(--ink-line);
+    display: flex; align-items: center;
+    padding: 0 20px;
+    gap: 18px;
+    background: rgba(11,12,16,.6);
+    backdrop-filter: blur(6px);
+    position: relative; z-index: 5;
+  }
+  .topbar .title {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: .18em;
+    color: var(--paper);
+    font-style: italic;
+  }
+  .topbar .title .zh {
+    font-family: var(--serif-cn); font-style: normal; font-weight: 900;
+    color: var(--cinnabar-glow); margin-left: 10px; letter-spacing: .3em;
+    font-size: 14px;
+  }
+  .topbar .meta {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mist); letter-spacing: .15em;
+    display: flex; gap: 14px;
+  }
+  .topbar .meta span b { color: var(--paper); font-weight: 600; }
+  .topbar-spacer { flex: 1; }
+
+  .icon-btn {
+    width: 32px; height: 32px;
+    display: grid; place-items: center;
+    background: transparent; border: 1px solid var(--ink-line);
+    color: var(--mist); cursor: pointer;
+    transition: all .18s;
+  }
+  .icon-btn:hover { color: var(--paper); border-color: var(--paper-dim); background: rgba(240,230,207,.03); }
+  .icon-btn svg { width: 16px; height: 16px; }
+
+  /* ---------- 书架视图 ---------- */
+  .view { position: absolute; inset: 0; overflow: auto; }
+  .view::-webkit-scrollbar { width: 8px; height: 8px; }
+  .view::-webkit-scrollbar-track { background: transparent; }
+  .view::-webkit-scrollbar-thumb { background: var(--ink-line); }
+  .view::-webkit-scrollbar-thumb:hover { background: var(--mist-2); }
+
+  .library {
+    padding: 36px 40px 60px;
+    min-height: 100%;
+  }
+  .library-head {
+    display: flex; align-items: end; justify-content: space-between;
+    margin-bottom: 32px;
+    border-bottom: 1px dashed var(--ink-line);
+    padding-bottom: 18px;
+  }
+  .library-head h1 {
+    font-family: var(--display); font-weight: 400; font-style: italic;
+    font-size: 44px; line-height: 1; color: var(--paper);
+    letter-spacing: .02em;
+  }
+  .library-head h1 em {
+    font-style: normal; color: var(--cinnabar-glow);
+    font-family: var(--serif-cn); font-weight: 900;
+    margin: 0 10px; letter-spacing: .2em; font-size: 36px;
+  }
+  .library-head .sub {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mist); letter-spacing: .3em;
+    margin-top: 10px;
+  }
+  .library-head .actions { display: flex; gap: 8px; }
+  .btn {
+    height: 34px; padding: 0 14px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .15em;
+    background: transparent; color: var(--paper);
+    border: 1px solid var(--ink-line); cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: all .2s;
+  }
+  .btn:hover { border-color: var(--paper-dim); background: rgba(240,230,207,.04); }
+  .btn.primary {
+    background: var(--cinnabar); border-color: var(--cinnabar);
+    color: var(--paper); box-shadow: 0 0 0 1px rgba(232,93,78,.2) inset, 0 4px 20px -8px var(--cinnabar);
+  }
+  .btn.primary:hover { background: var(--cinnabar-glow); border-color: var(--cinnabar-glow); }
+  .btn svg { width: 14px; height: 14px; }
+
+  /* 书架网格 */
+  .shelf {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 22px 20px;
+  }
+  .book {
+    position: relative;
+    cursor: pointer;
+    animation: bookIn .5s cubic-bezier(.2,.7,.2,1) backwards;
+  }
+  @keyframes bookIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: none; }
+  }
+  .book-cover {
+    aspect-ratio: 3/4;
+    background: var(--ink-3);
+    border: 1px solid var(--ink-line);
+    overflow: hidden;
+    position: relative;
+    transition: all .25s;
+  }
+  .book:hover .book-cover {
+    border-color: var(--cinnabar);
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px -20px rgba(194,65,54,.5), 0 0 0 1px rgba(194,65,54,.15);
+  }
+  .book-cover img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: contrast(1.02) saturate(.95);
+    transition: transform .4s;
+  }
+  .book:hover .book-cover img { transform: scale(1.04); }
+  .book-cover::after {
+    content:""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.7) 100%);
+  }
+  .book-progress {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 2px; background: rgba(0,0,0,.5);
+  }
+  .book-progress i {
+    display: block; height: 100%; background: var(--cinnabar);
+    box-shadow: 0 0 8px var(--cinnabar-glow);
+    width: var(--p, 0%);
+  }
+  .book-badge {
+    position: absolute; top: 8px; right: 8px;
+    font-family: var(--mono); font-size: 9px;
+    background: rgba(0,0,0,.7); color: var(--paper);
+    padding: 3px 6px; letter-spacing: .1em;
+    border: 1px solid rgba(240,230,207,.2);
+    backdrop-filter: blur(4px);
+  }
+  .book-new {
+    position: absolute; top: 8px; left: 8px;
+    width: 6px; height: 6px; background: var(--cinnabar-glow);
+    box-shadow: 0 0 10px var(--cinnabar-glow);
+    transform: rotate(45deg);
+  }
+  .book-info { margin-top: 10px; padding: 0 2px; }
+  .book-info .btitle {
+    font-family: var(--serif-cn); font-weight: 600; font-size: 13px;
+    color: var(--paper);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .book-info .bmeta {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mist); margin-top: 3px; letter-spacing: .1em;
+    display: flex; justify-content: space-between;
+  }
+
+  /* 空态 / 拖入 */
+  .empty-drop {
+    margin: 40px auto;
+    max-width: 680px;
+    border: 1.5px dashed var(--ink-line);
+    padding: 60px 40px;
+    text-align: center;
+    position: relative;
+    background:
+      repeating-linear-gradient(45deg, transparent 0 12px, rgba(240,230,207,.015) 12px 13px);
+    transition: all .25s;
+  }
+  .empty-drop:hover { border-color: var(--mist-2); }
+  .empty-drop .seal {
+    width: 88px; height: 88px; margin: 0 auto 20px;
+    border: 2px solid var(--cinnabar); color: var(--cinnabar-glow);
+    display: grid; place-items: center;
+    position: relative;
+    transform: rotate(-4deg);
+    background: radial-gradient(circle, rgba(194,65,54,.08), transparent 70%);
+  }
+  .empty-drop .seal svg { width: 44px; height: 44px; }
+  .empty-drop .seal::before, .empty-drop .seal::after {
+    content:""; position: absolute; inset: 4px;
+    border: 1px solid var(--cinnabar-deep);
+  }
+  .empty-drop .seal::after { inset: 8px; border-style: dashed; }
+  .empty-drop h2 {
+    font-family: var(--display); font-weight: 400; font-style: italic;
+    font-size: 28px; color: var(--paper); margin-bottom: 6px;
+  }
+  .empty-drop h2 em { font-style: normal; color: var(--cinnabar-glow); font-family: var(--serif-cn); font-weight: 900; margin: 0 8px; }
+  .empty-drop p { color: var(--mist); font-size: 13px; margin-top: 6px; }
+  .empty-drop .kbd {
+    display: inline-block; margin: 16px 4px 0; padding: 4px 10px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .15em;
+    border: 1px solid var(--ink-line); color: var(--paper);
+    background: var(--ink-2);
+  }
+
+  /* 加载条 */
+  .loading-bar {
+    position: fixed; top: 0; left: 0; right: 0; height: 2px;
+    background: transparent; z-index: 9998; pointer-events: none;
+  }
+  .loading-bar.active {
+    background: linear-gradient(90deg, transparent, var(--cinnabar), var(--cinnabar-glow), var(--cinnabar), transparent);
+    background-size: 200% 100%;
+    animation: loadSlide 1.4s linear infinite;
+  }
+  @keyframes loadSlide {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
+
+  /* 全局拖入覆盖层 */
+  .drop-overlay {
+    position: absolute; inset: 0; z-index: 200;
+    background: rgba(11,12,16,.88);
+    backdrop-filter: blur(10px);
+    display: none;
+    align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .drop-overlay.show { display: flex; }
+  .drop-overlay .inner {
+    border: 2px dashed var(--cinnabar);
+    padding: 60px 80px;
+    text-align: center;
+    background: radial-gradient(circle, rgba(194,65,54,.12), transparent 70%);
+    animation: dropPulse 1.6s ease-in-out infinite;
+  }
+  @keyframes dropPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(194,65,54,.4); }
+    50% { box-shadow: 0 0 0 16px rgba(194,65,54,0); }
+  }
+  .drop-overlay h3 {
+    font-family: var(--display); font-style: italic;
+    font-size: 36px; color: var(--paper);
+  }
+  .drop-overlay h3 em { color: var(--cinnabar-glow); font-family: var(--serif-cn); font-style: normal; font-weight: 900; margin: 0 8px; }
+  .drop-overlay p { color: var(--mist); margin-top: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: .2em; }
+
+  /* ---------- 阅读器视图 ---------- */
+  .reader { display: grid; grid-template-columns: 1fr; grid-template-rows: 1fr; }
+  .reader-canvas {
+    position: absolute; inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background:
+      radial-gradient(ellipse at center, rgba(240,230,207,.02), transparent 60%),
+      var(--ink);
+    scroll-behavior: smooth;
+  }
+  .reader-canvas::-webkit-scrollbar { width: 10px; }
+  .reader-canvas::-webkit-scrollbar-track { background: var(--ink-2); }
+  .reader-canvas::-webkit-scrollbar-thumb {
+    background: linear-gradient(var(--cinnabar-deep), var(--cinnabar));
+  }
+
+  .reader-inner {
+    margin: 0 auto;
+    display: flex; flex-direction: column;
+    padding: 24px 0 120px;
+    min-height: 100%;
+  }
+  .page-image {
+    display: block;
+    max-width: 100%;
+    margin: 0 auto;
+    background: var(--ink-3);
+    content-visibility: auto;
+    contain-intrinsic-size: auto 900px;
+  }
+  .page-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+    opacity: 0;
+    transition: opacity .35s, filter .2s;
+    will-change: filter;
+  }
+  .page-image img.loaded { opacity: 1; }
+
+  /* 单页/双页模式 */
+  .reader-inner.mode-page {
+    padding: 40px 0;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+  }
+  .reader-inner.mode-page .page-image {
+    max-height: calc(100vh - 180px);
+  }
+  .reader-inner.mode-page .page-image img {
+    max-height: calc(100vh - 180px);
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+  }
+  .reader-inner.mode-dual {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+  }
+  .reader-inner.mode-dual .page-image {
+    width: calc(50% - 2px);
+    max-width: 640px;
+  }
+
+  /* 阅读工具栏 */
+  .reader-toolbar {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 56px;
+    background: linear-gradient(180deg, rgba(11,12,16,.95), rgba(11,12,16,.7) 80%, transparent);
+    display: flex; align-items: center;
+    padding: 0 20px; gap: 14px;
+    z-index: 50;
+    transform: translateY(-100%);
+    transition: transform .3s cubic-bezier(.2,.7,.2,1);
+  }
+  .reader-canvas:hover .reader-toolbar,
+  .reader-toolbar.show { transform: translateY(0); }
+
+  .reader-toolbar .comic-title {
+    font-family: var(--serif-cn); font-weight: 600;
+    font-size: 14px; color: var(--paper);
+    max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .reader-toolbar .comic-title small {
+    display: block; font-family: var(--mono); font-size: 9px;
+    color: var(--mist); letter-spacing: .2em; margin-top: 2px;
+  }
+
+  .reader-progress-bar {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+    background: rgba(240,230,207,.06);
+    z-index: 40;
+  }
+  .reader-progress-bar i {
+    display: block; height: 100%;
+    background: linear-gradient(90deg, var(--cinnabar-deep), var(--cinnabar-glow));
+    box-shadow: 0 0 12px var(--cinnabar-glow);
+    width: 0%; transition: width .1s;
+  }
+  .reader-counter {
+    position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+    font-family: var(--mono); font-size: 10px; letter-spacing: .3em;
+    color: var(--mist);
+    background: rgba(11,12,16,.8); backdrop-filter: blur(8px);
+    padding: 6px 14px;
+    border: 1px solid var(--ink-line);
+    z-index: 40;
+    opacity: 0; transition: opacity .25s;
+  }
+  .reader-canvas:hover .reader-counter { opacity: 1; }
+  .reader-counter b { color: var(--paper); font-weight: 600; }
+
+  /* 右侧悬浮面板 */
+  .side-panel {
+    position: absolute; top: 80px; right: 16px;
+    width: 260px;
+    background: rgba(11,12,16,.92); backdrop-filter: blur(12px);
+    border: 1px solid var(--ink-line);
+    z-index: 45;
+    transform: translateX(calc(100% + 32px));
+    transition: transform .35s cubic-bezier(.2,.7,.2,1);
+    max-height: calc(100vh - 120px);
+    display: flex; flex-direction: column;
+  }
+  .side-panel.open { transform: translateX(0); }
+  .side-panel .tabs {
+    display: flex; border-bottom: 1px solid var(--ink-line);
+  }
+  .side-panel .tab {
+    flex: 1; padding: 10px 8px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .2em;
+    background: transparent; border: none; cursor: pointer;
+    color: var(--mist);
+  }
+  .side-panel .tab.active {
+    color: var(--cinnabar-glow);
+    background: linear-gradient(180deg, rgba(194,65,54,.1), transparent);
+    border-bottom: 1px solid var(--cinnabar);
+    margin-bottom: -1px;
+  }
+  .side-panel .panel-body {
+    padding: 14px 16px 18px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .side-panel .panel-body::-webkit-scrollbar { width: 4px; }
+  .side-panel .panel-body::-webkit-scrollbar-thumb { background: var(--ink-line); }
+  .ctrl-row { margin-bottom: 14px; }
+  .ctrl-row label {
+    display: flex; justify-content: space-between;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .2em;
+    color: var(--mist); margin-bottom: 6px;
+  }
+  .ctrl-row label b { color: var(--paper); font-weight: 600; }
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 2px; background: var(--ink-line); outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 12px; height: 12px; background: var(--cinnabar);
+    cursor: pointer;
+    box-shadow: 0 0 0 3px rgba(194,65,54,.15);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 12px; height: 12px; background: var(--cinnabar); border: none; cursor: pointer;
+  }
+  .mode-switch {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+    margin-bottom: 14px;
+  }
+  .mode-switch button {
+    padding: 8px 0;
+    font-family: var(--mono); font-size: 9px; letter-spacing: .15em;
+    background: transparent; border: 1px solid var(--ink-line);
+    color: var(--mist); cursor: pointer;
+  }
+  .mode-switch button.active {
+    color: var(--paper); border-color: var(--cinnabar);
+    background: rgba(194,65,54,.1);
+  }
+  /* 缩略图 */
+  .thumb-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .thumb {
+    aspect-ratio: 3/4;
+    border: 1px solid var(--ink-line);
+    cursor: pointer;
+    background: var(--ink-3);
+    position: relative;
+    overflow: hidden;
+    transition: all .15s;
+  }
+  .thumb:hover { border-color: var(--paper-dim); }
+  .thumb.active { border-color: var(--cinnabar); box-shadow: 0 0 0 1px var(--cinnabar), 0 0 12px rgba(194,65,54,.4); }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .thumb span {
+    position: absolute; bottom: 2px; right: 3px;
+    font-family: var(--mono); font-size: 8px;
+    color: var(--paper); background: rgba(0,0,0,.7);
+    padding: 1px 3px;
+  }
+
+  /* 弹窗 / Toast */
+  .toast-wrap {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    z-index: 9000; display: flex; flex-direction: column; gap: 8px;
+    pointer-events: none;
+  }
+  .toast {
+    background: rgba(11,12,16,.95);
+    border: 1px solid var(--ink-line); border-left: 3px solid var(--cinnabar);
+    padding: 10px 16px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .15em;
+    color: var(--paper);
+    animation: toastIn .3s cubic-bezier(.2,.7,.2,1);
+    max-width: 400px;
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* 菜单按钮组 */
+  .btn-group { display: inline-flex; }
+  .btn-group .icon-btn + .icon-btn { margin-left: 4px; }
+
+  /* 隐藏 */
+  [hidden] { display: none !important; }
+
+  /* 小徽章 */
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: .2em;
+    border: 1px solid var(--ink-line); color: var(--mist);
+  }
+  .chip.hot { border-color: var(--cinnabar); color: var(--cinnabar-glow); }
+
+  /* 右键菜单 */
+  .ctx-menu {
+    position: fixed; z-index: 9500;
+    background: rgba(11,12,16,.98); backdrop-filter: blur(10px);
+    border: 1px solid var(--ink-line);
+    min-width: 180px;
+    padding: 4px;
+    display: none;
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,.6);
+  }
+  .ctx-menu.show { display: block; animation: ctxIn .15s ease; }
+  @keyframes ctxIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  .ctx-menu button {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; padding: 8px 12px;
+    background: transparent; border: none; cursor: pointer;
+    font-family: var(--serif-cn); font-size: 12px; color: var(--paper);
+    text-align: left;
+  }
+  .ctx-menu button:hover { background: rgba(194,65,54,.12); color: var(--cinnabar-glow); }
+  .ctx-menu button svg { width: 14px; height: 14px; color: var(--mist); }
+  .ctx-menu button:hover svg { color: var(--cinnabar-glow); }
+  .ctx-menu hr { border: none; border-top: 1px solid var(--ink-line); margin: 4px 0; }
+  .ctx-menu .hint {
+    font-family: var(--mono); font-size: 9px; color: var(--mist);
+    margin-left: auto; letter-spacing: .1em;
+  }
+
+  /* 键盘帮助 */
+  .shortcuts {
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 8px 20px;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: .1em;
+  }
+  .shortcuts .k {
+    color: var(--cinnabar-glow);
+    font-family: var(--mono);
+    border: 1px solid var(--ink-line);
+    padding: 1px 6px;
+    background: var(--ink-2);
+  }
+  .shortcuts .desc { color: var(--paper); }
+
+</style>
+</head>
+<body>
+<div class="bg-atmos"></div>
+<div class="bg-grid"></div>
+
+<div id="app">
+  <!-- 左侧 rail -->
+  <aside class="rail">
+    <div class="brand" title="条漫阅 · JISHENG">漫</div>
+    <button class="rail-btn active" data-view="library" title="书架">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h5v16H4zM10 6h5v14h-5zM16 4h5v16h-5z"/></svg>
+    </button>
+    <button class="rail-btn" data-view="recent" title="最近阅读">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    </button>
+    <button class="rail-btn" data-view="bookmarks" title="书签">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg>
+    </button>
+    <div class="rail-spacer"></div>
+    <button class="rail-btn" id="btn-help" title="快捷键">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 1-1 1.7M12 17h.01"/></svg>
+    </button>
+    <button class="rail-btn" id="btn-import" title="导入文件/文件夹">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h6l2 2h8v10H4zM12 13v5M9 16l3-3 3 3"/></svg>
+    </button>
+    <div class="rail-label">JISHENG·OS</div>
+  </aside>
+
+  <!-- 主区 -->
+  <main class="main">
+    <!-- 顶栏 -->
+    <div class="topbar">
+      <div class="title">Manga<em class="zh">条漫阅</em></div>
+      <div class="meta">
+        <span>V<b id="m-ver">10.5.2</b></span>
+        <span>藏 <b id="m-count">0</b> 卷</span>
+        <span>页 <b id="m-pages">0</b></span>
+        <span id="m-storage" style="color:var(--jade-glow)"></span>
+      </div>
+      <div class="topbar-spacer"></div>
+      <div class="btn-group">
+        <button class="icon-btn" id="btn-sort" title="排序">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h10M4 18h6"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-clear" title="清空书架">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- 书架 -->
+    <section class="view" id="view-library">
+      <div class="library">
+        <div class="library-head">
+          <div>
+            <h1>Inkbound<em>藏卷</em>Library</h1>
+            <div class="sub">— THE COLLECTION · 朱砂阁 —</div>
+          </div>
+          <div class="actions">
+            <button class="btn" id="btn-import-file">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg>
+              导入文件
+            </button>
+            <button class="btn" id="btn-import-folder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+              导入文件夹
+            </button>
+            <button class="btn primary" id="btn-drop-hint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v14m0 0l-5-5m5 5l5-5M5 21h14"/></svg>
+              拖入漫画
+            </button>
+          </div>
+        </div>
+
+        <div id="shelf-container"></div>
+      </div>
+    </section>
+
+    <!-- 阅读器 -->
+    <section class="view" id="view-reader" hidden>
+      <div class="reader">
+        <div class="reader-canvas" id="reader-canvas">
+          <div class="reader-toolbar" id="reader-toolbar">
+            <button class="icon-btn" id="btn-back" title="返回书架">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div class="comic-title" id="r-title">—</div>
+            <div class="topbar-spacer"></div>
+            <button class="icon-btn" id="btn-bookmark" title="书签 (B)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg>
+            </button>
+            <button class="icon-btn" id="btn-fullscreen" title="全屏 (F)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+            </button>
+            <button class="icon-btn" id="btn-sidepanel" title="设置面板">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+            </button>
+          </div>
+
+          <div class="reader-inner" id="reader-inner"></div>
+
+          <div class="reader-counter" id="r-counter">— / —</div>
+          <div class="reader-progress-bar"><i id="r-progress"></i></div>
+        </div>
+
+        <!-- 侧面板 -->
+        <aside class="side-panel" id="side-panel">
+          <div class="tabs">
+            <button class="tab active" data-tab="view">阅读</button>
+            <button class="tab" data-tab="filter">滤镜</button>
+            <button class="tab" data-tab="thumbs">目录</button>
+          </div>
+          <div class="panel-body" id="panel-body"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 拖入覆盖 -->
+    <div class="drop-overlay" id="drop-overlay">
+      <div class="inner">
+        <h3>Drop<em>投入</em>here</h3>
+        <p>IMAGES · FOLDERS · ARCHIVES</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="grain"></div>
+<div class="loading-bar" id="loading-bar"></div>
+<div class="toast-wrap" id="toast-wrap"></div>
+<div class="ctx-menu" id="ctx-menu"></div>
+
+<!-- 隐藏的文件输入 -->
+<input type="file" id="file-input" multiple accept="image/*" hidden />
+<input type="file" id="folder-input" webkitdirectory directory multiple hidden />
+
+<script>
+/* ============================================================
+ *  条漫阅 · JISHENG OS  APP
+ *  Inkbound Manga Reader
+ *
+ *  持久化策略：
+ *   - IndexedDB 存储图片 blob（永久，刷新不丢失）
+ *   - localStorage 存储元数据（book 列表、pageId 引用、设置）
+ *   - 启动时从 IDB 恢复 blob → 重建 objectURL
+ * ============================================================ */
+'use strict';
+
+const $  = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => [...el.querySelectorAll(s)];
+
+/* ============================================================
+ *  IndexedDB 封装
+ * ============================================================ */
+const IDB = {
+  DB_NAME: 'jisheng-inkbound',
+  DB_VER: 1,
+  STORE: 'pages',
+  _db: null,
+
+  open() {
+    if (this._db) return Promise.resolve(this._db);
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(this.DB_NAME, this.DB_VER);
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(this.STORE)) {
+          db.createObjectStore(this.STORE);
+        }
+      };
+      req.onsuccess = e => { this._db = e.target.result; resolve(this._db); };
+      req.onerror = e => reject(e.target.error);
+    });
+  },
+
+  async _tx(mode) {
+    const db = await this.open();
+    return db.transaction(this.STORE, mode).objectStore(this.STORE);
+  },
+
+  async put(key, value) {
+    const store = await this._tx('readwrite');
+    return new Promise((resolve, reject) => {
+      const req = store.put(value, key);
+      req.onsuccess = () => resolve();
+      req.onerror = e => reject(e.target.error);
+    });
+  },
+
+  async get(key) {
+    const store = await this._tx('readonly');
+    return new Promise((resolve, reject) => {
+      const req = store.get(key);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = e => reject(e.target.error);
+    });
+  },
+
+  async delete(key) {
+    const store = await this._tx('readwrite');
+    return new Promise((resolve, reject) => {
+      const req = store.delete(key);
+      req.onsuccess = () => resolve();
+      req.onerror = e => reject(e.target.error);
+    });
+  },
+
+  async deleteMany(keys) {
+    const store = await this._tx('readwrite');
+    return new Promise((resolve, reject) => {
+      let pending = keys.length;
+      if (pending === 0) return resolve();
+      let failed = false;
+      for (const k of keys) {
+        const req = store.delete(k);
+        req.onsuccess = () => { if (--pending === 0 && !failed) resolve(); };
+        req.onerror = e => { failed = true; reject(e.target.error); };
+      }
+    });
+  },
+
+  async clear() {
+    const store = await this._tx('readwrite');
+    return new Promise((resolve, reject) => {
+      const req = store.clear();
+      req.onsuccess = () => resolve();
+      req.onerror = e => reject(e.target.error);
+    });
+  },
+
+  async size() {
+    if (!navigator.storage || !navigator.storage.estimate) return null;
+    const est = await navigator.storage.estimate();
+    return { used: est.usage || 0, quota: est.quota || 0 };
+  }
+};
+
+/* ============================================================
+ *  状态
+ * ============================================================ */
+const LS_KEY = 'jisheng.inkbound.v1';
+const state = {
+  books: [],          // { id, name, pages:[{id,name}], createdAt, lastRead, progress, coverIdx, bookmarks:[] }
+  currentBookId: null,
+  currentPage: 0,
+  view: 'library',
+  readMode: 'strip',  // strip | page | dual
+  fit: 'width',
+  filter: { brightness:100, contrast:100, saturate:100, hue:0, invert:0 },
+  sort: 'recent',
+  sideTab: 'view',
+  _urlCache: new Map(), // pageId -> objectURL (内存缓存)
+};
+
+function save() {
+  const data = {
+    books: state.books.map(b => ({
+      id: b.id, name: b.name, createdAt: b.createdAt,
+      lastRead: b.lastRead, progress: b.progress, coverIdx: b.coverIdx,
+      pageCount: b.pages.length, bookmarks: b.bookmarks || [],
+      pageIds: b.pages.map(p => p.id)
+    })),
+    view: state.view, readMode: state.readMode, fit: state.fit,
+    filter: state.filter, sort: state.sort, sideTab: state.sideTab
+  };
+  try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch(e){ console.warn('save failed', e); }
+}
+
+function loadMeta() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    // 恢复元数据，pages 先置为空数组（由 restore 填充）
+    state.books = (d.books || []).map(b => ({
+      ...b,
+      pages: (b.pageIds || []).map(pid => ({ id: pid, name: pid })),
+      bookmarks: b.bookmarks || []
+    }));
+    state.view = d.view || 'library';
+    state.readMode = d.readMode || 'strip';
+    state.fit = d.fit || 'width';
+    state.filter = d.filter || state.filter;
+    state.sort = d.sort || 'recent';
+    state.sideTab = d.sideTab || 'view';
+  } catch(e) { console.warn('loadMeta failed', e); }
+}
+
+/* 从 IDB 恢复所有 blob → objectURL */
+async function restoreBlobs() {
+  if (state.books.length === 0) return;
+  const bar = $('#loading-bar');
+  bar.classList.add('active');
+  let total = 0, done = 0;
+  state.books.forEach(b => total += b.pages.length);
+
+  // 并行恢复（分片避免阻塞主线程）
+  const tasks = [];
+  for (const book of state.books) {
+    for (const page of book.pages) {
+      tasks.push((async () => {
+        try {
+          const blob = await IDB.get(page.id);
+          if (blob instanceof Blob) {
+            const url = URL.createObjectURL(blob);
+            page.url = url;
+            state._urlCache.set(page.id, url);
+          }
+        } catch(e) {}
+        done++;
+      })());
+    }
+    // 每 50 个 yield 一次
+    if (tasks.length % 50 === 0) await Promise.all(tasks.splice(0));
+  }
+  await Promise.all(tasks);
+  bar.classList.remove('active');
+}
+
+/* 获取 page 的 url（懒加载缓存） */
+async function getPageUrl(pageId) {
+  if (state._urlCache.has(pageId)) return state._urlCache.get(pageId);
+  const blob = await IDB.get(pageId);
+  if (!(blob instanceof Blob)) return null;
+  const url = URL.createObjectURL(blob);
+  state._urlCache.set(pageId, url);
+  return url;
+}
+
+/* ============================================================
+ *  工具函数
+ * ============================================================ */
+const uid = () => 'bk_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+const pid = (bookId, idx) => `${bookId}_p${idx}`;
+const fmtDate = ts => {
+  if (!ts) return '—';
+  const d = new Date(ts), now = new Date();
+  const diff = (now - d) / 1000;
+  if (diff < 60) return '刚刚';
+  if (diff < 3600) return Math.floor(diff/60) + '分钟前';
+  if (diff < 86400) return Math.floor(diff/3600) + '小时前';
+  if (diff < 86400*7) return Math.floor(diff/86400) + '天前';
+  return d.getFullYear() + '/' + (d.getMonth()+1) + '/' + d.getDate();
+};
+const fmtBytes = b => {
+  if (!b && b !== 0) return '—';
+  const u = ['B','KB','MB','GB'];
+  let i = 0;
+  while (b >= 1024 && i < u.length - 1) { b /= 1024; i++; }
+  return b.toFixed(b >= 100 || i === 0 ? 0 : 1) + u[i];
+};
+const naturalSort = (a, b) => a.localeCompare(b, 'zh-CN', { numeric: true, sensitivity: 'base' });
+
+function toast(msg, ms=2200) {
+  const el = document.createElement('div');
+  el.className = 'toast'; el.textContent = msg;
+  $('#toast-wrap').appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transform='translateY(6px)'; el.style.transition='all .3s'; }, ms);
+  setTimeout(() => el.remove(), ms + 320);
+}
+
+async function updateStorage() {
+  const est = await IDB.size();
+  if (est) {
+    $('#m-storage').textContent = `存储 ${fmtBytes(est.used)}`;
+  }
+}
+
+/* ============================================================
+ *  文件拖入 / 导入
+ * ============================================================ */
+function isImage(name) {
+  return /\.(jpe?g|png|webp|gif|avif|bmp|svg)$/i.test(name);
+}
+
+async function readEntry(entry, path='') {
+  const out = [];
+  if (entry.isFile) {
+    const file = await new Promise(res => entry.file(res));
+    out.push({ path, file });
+  } else if (entry.isDirectory) {
+    const reader = entry.createReader();
+    const allEntries = [];
+    const readBatch = () => new Promise(res => reader.readEntries(res));
+    let batch;
+    do { batch = await readBatch(); allEntries.push(...batch); } while (batch.length > 0);
+    for (const e of allEntries) {
+      const sub = await readEntry(e, path ? path + '/' + entry.name : entry.name);
+      out.push(...sub);
+    }
+  }
+  return out;
+}
+
+async function handleItems(items) {
+  const files = [];
+  if (items && items[0] && items[0].webkitGetAsEntry) {
+    const entries = [];
+    for (const it of items) {
+      const e = it.webkitGetAsEntry && it.webkitGetAsEntry();
+      if (e) entries.push(e);
+    }
+    for (const e of entries) {
+      const got = await readEntry(e);
+      files.push(...got);
+    }
+  } else {
+    const list = items instanceof FileList ? [...items] : items;
+    for (const f of list) files.push({ path: '', file: f });
+  }
+
+  const images = files.filter(x => isImage(x.file.name));
+  if (images.length === 0) {
+    toast('未检测到图片文件');
+    return;
+  }
+
+  // 按顶层文件夹分组
+  const groups = new Map();
+  for (const x of images) {
+    const seg = x.path.split('/').filter(Boolean);
+    let groupName;
+    if (seg.length >= 1) groupName = seg[0];
+    else {
+      const rel = x.file.webkitRelativePath || '';
+      const relSeg = rel.split('/').filter(Boolean);
+      groupName = relSeg[0] || x.file.name.replace(/\.[^.]+$/, '');
+    }
+    if (!groups.has(groupName)) groups.set(groupName, []);
+    groups.get(groupName).push(x);
+  }
+
+  const bar = $('#loading-bar');
+  bar.classList.add('active');
+  let addedCount = 0, totalPages = 0;
+
+  try {
+    for (const [name, arr] of groups) {
+      arr.sort((a,b) => naturalSort(a.file.name, b.file.name));
+      const bookId = uid();
+      const pages = [];
+
+      // 逐页写入 IDB
+      for (let i = 0; i < arr.length; i++) {
+        const pageId = pid(bookId, i);
+        const file = arr[i].file;
+        await IDB.put(pageId, file);
+        const url = URL.createObjectURL(file);
+        state._urlCache.set(pageId, url);
+        pages.push({ id: pageId, name: file.name, url });
+      }
+
+      const book = {
+        id: bookId,
+        name,
+        pages,
+        createdAt: Date.now(),
+        lastRead: null,
+        progress: 0,
+        coverIdx: 0,
+        bookmarks: []
+      };
+      state.books.push(book);
+      addedCount++;
+      totalPages += pages.length;
+    }
+    save();
+    renderLibrary();
+    updateMeta();
+    updateStorage();
+    toast(`已导入 ${addedCount} 部漫画 · ${totalPages} 页`);
+  } catch(e) {
+    console.error(e);
+    toast('导入失败：' + e.message, 3500);
+  } finally {
+    bar.classList.remove('active');
+  }
+}
+
+/* 拖入事件 */
+const dropOverlay = $('#drop-overlay');
+let dragDepth = 0;
+window.addEventListener('dragenter', e => {
+  if (!e.dataTransfer) return;
+  if (!Array.from(e.dataTransfer.types).includes('Files')) return;
+  dragDepth++;
+  dropOverlay.classList.add('show');
+  e.preventDefault();
+});
+window.addEventListener('dragover', e => {
+  if (!e.dataTransfer) return;
+  if (!Array.from(e.dataTransfer.types).includes('Files')) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'copy';
+});
+window.addEventListener('dragleave', e => {
+  dragDepth--;
+  if (dragDepth <= 0) { dragDepth = 0; dropOverlay.classList.remove('show'); }
+});
+window.addEventListener('drop', async e => {
+  dragDepth = 0; dropOverlay.classList.remove('show');
+  if (!e.dataTransfer) return;
+  e.preventDefault();
+  await handleItems(e.dataTransfer.items);
+});
+
+/* 按钮导入 */
+$('#btn-import-file').onclick = () => { const i = $('#file-input'); i.value = ''; i.click(); };
+$('#btn-import-folder').onclick = () => { const i = $('#folder-input'); i.value = ''; i.click(); };
+$('#btn-import').onclick = () => { const i = $('#folder-input'); i.value = ''; i.click(); };
+$('#btn-drop-hint').onclick = () => {
+  toast('拖入图片或文件夹到窗口任意位置', 3200);
+};
+$('#file-input').onchange = async e => {
+  if (e.target.files.length) await handleItems(e.target.files);
+  e.target.value = '';
+};
+$('#folder-input').onchange = async e => {
+  if (e.target.files.length) await handleItems(e.target.files);
+  e.target.value = '';
+};
+
+/* ============================================================
+ *  书架渲染
+ * ============================================================ */
+const shelfEl = $('#shelf-container');
+
+function getSortedBooks() {
+  const arr = [...state.books];
+  if (state.sort === 'recent') arr.sort((a,b) => (b.lastRead||0) - (a.lastRead||0) || b.createdAt - a.createdAt);
+  else if (state.sort === 'name') arr.sort((a,b) => naturalSort(a.name, b.name));
+  else if (state.sort === 'added') arr.sort((a,b) => b.createdAt - a.createdAt);
+  return arr;
+}
+
+function renderLibrary() {
+  shelfEl.innerHTML = '';
+  const books = getSortedBooks();
+  if (books.length === 0) {
+    shelfEl.innerHTML = `
+      <div class="empty-drop">
+        <div class="seal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M12 3v14m0 0l-5-5m5 5l5-5M5 21h14"/>
+          </svg>
+        </div>
+        <h2>Empty<em>虚室</em>Scroll</h2>
+        <p>拖入图片 · 文件夹至窗口，或点击下方导入</p>
+        <div>
+          <span class="kbd">拖入</span>
+          <span class="kbd">.jpg .png .webp</span>
+          <span class="kbd">支持文件夹</span>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const shelf = document.createElement('div');
+  shelf.className = 'shelf';
+  books.forEach((b, i) => {
+    const card = document.createElement('div');
+    card.className = 'book';
+    card.style.animationDelay = Math.min(i * 30, 600) + 'ms';
+    const coverPage = b.pages[b.coverIdx || 0] || b.pages[0];
+    const pct = Math.round((b.progress || 0) * 100);
+    const isNew = !b.lastRead && (Date.now() - b.createdAt < 86400000);
+
+    card.innerHTML = `
+      <div class="book-cover">
+        <img loading="lazy" alt="" />
+        ${isNew ? '<div class="book-new"></div>' : ''}
+        <div class="book-badge">${b.pages.length}P</div>
+        <div class="book-progress"><i style="--p:${pct}%"></i></div>
+      </div>
+      <div class="book-info">
+        <div class="btitle" title="${escapeHtml(b.name)}">${escapeHtml(b.name)}</div>
+        <div class="bmeta"><span>${fmtDate(b.lastRead || b.createdAt)}</span><span>${pct}%</span></div>
+      </div>
+    `;
+
+    // 异步加载封面
+    const img = card.querySelector('img');
+    if (coverPage) {
+      const setCover = (url) => { if (url) img.src = url; };
+      if (coverPage.url) setCover(coverPage.url);
+      else getPageUrl(coverPage.id).then(setCover);
+    }
+
+    card.onclick = () => openBook(b.id);
+    card.oncontextmenu = e => { e.preventDefault(); showBookMenu(e, b); };
+    shelf.appendChild(card);
+  });
+  shelfEl.appendChild(shelf);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function updateMeta() {
+  $('#m-count').textContent = state.books.length;
+  $('#m-pages').textContent = state.books.reduce((s,b) => s + b.pages.length, 0);
+}
+
+/* ============================================================
+ *  阅读器
+ * ============================================================ */
+const readerCanvas = $('#reader-canvas');
+const readerInner  = $('#reader-inner');
+let _saveTimer = null;
+
+async function openBook(id, startPage=0) {
+  const book = state.books.find(b => b.id === id);
+  if (!book) return;
+  state.currentBookId = id;
+  state.currentPage = startPage || (book.progress ? Math.floor(book.progress * book.pages.length) : 0);
+  book.lastRead = Date.now();
+  switchView('reader');
+  await renderReader();
+  requestAnimationFrame(() => scrollToPage(state.currentPage, false));
+}
+
+async function renderReader() {
+  const book = state.books.find(b => b.id === state.currentBookId);
+  if (!book) return;
+  $('#r-title').innerHTML = escapeHtml(book.name) + `<small>共 ${book.pages.length} 页 · 已加入书签 ${book.bookmarks.length}</small>`;
+
+  readerInner.className = 'reader-inner mode-' + state.readMode;
+  readerInner.innerHTML = '';
+
+  const frag = document.createDocumentFragment();
+  book.pages.forEach((p, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'page-image';
+    wrap.dataset.index = i;
+    const img = document.createElement('img');
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    img.alt = p.name;
+    // 优先用缓存 URL，否则异步加载
+    if (p.url) img.src = p.url;
+    else {
+      getPageUrl(p.id).then(url => {
+        if (url) { p.url = url; img.src = url; }
+      });
+    }
+    img.onload = () => img.classList.add('loaded');
+    img.onerror = () => { wrap.style.background = 'var(--cinnabar-deep)'; wrap.style.minHeight='80px'; };
+    wrap.appendChild(img);
+    applyFilter(img);
+    frag.appendChild(wrap);
+  });
+  readerInner.appendChild(frag);
+
+  applyMode();
+  renderSidePanel();
+}
+
+function applyFilter(img) {
+  const f = state.filter;
+  img.style.filter = `brightness(${f.brightness}%) contrast(${f.contrast}%) saturate(${f.saturate}%) hue-rotate(${f.hue}deg) invert(${f.invert}%)`;
+}
+function applyFilterAll() {
+  $$('#reader-inner img').forEach(applyFilter);
+}
+
+function applyMode() {
+  readerInner.className = 'reader-inner mode-' + state.readMode;
+  const fit = state.fit;
+  if (state.readMode === 'strip') {
+    if (fit === 'width') readerInner.style.maxWidth = 'min(100%, 1200px)';
+    else if (fit === '100') readerInner.style.maxWidth = '100%';
+    else if (fit === '150') readerInner.style.maxWidth = '150%';
+    else readerInner.style.maxWidth = '800px';
+  } else {
+    readerInner.style.maxWidth = '';
+  }
+}
+
+/* 滚动 + 进度 */
+readerCanvas.addEventListener('scroll', () => {
+  updateProgress();
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(saveProgress, 400);
+});
+
+function updateProgress() {
+  const book = state.books.find(b => b.id === state.currentBookId);
+  if (!book) return;
+  const pages = $$('#reader-inner .page-image');
+  if (pages.length === 0) return;
+  const vh = readerCanvas.getBoundingClientRect().height;
+  let currentIdx = 0;
+  for (let i = 0; i < pages.length; i++) {
+    const r = pages[i].getBoundingClientRect();
+    if (r.top <= vh * 0.3) currentIdx = i;
+  }
+  state.currentPage = currentIdx;
+  const total = book.pages.length;
+  const pct = Math.max(0, Math.min(1, (currentIdx + 1) / total));
+  $('#r-progress').style.width = (pct * 100) + '%';
+  $('#r-counter').innerHTML = `<b>${String(currentIdx+1).padStart(3,'0')}</b> / ${String(total).padStart(3,'0')}`;
+}
+
+function saveProgress() {
+  const book = state.books.find(b => b.id === state.currentBookId);
+  if (!book) return;
+  book.progress = (state.currentPage + 1) / book.pages.length;
+  book.lastRead = Date.now();
+  save();
+}
+
+function scrollToPage(idx, smooth=true) {
+  const pages = $$('#reader-inner .page-image');
+  const page = pages[idx];
+  if (!page) return;
+  const oldBehavior = readerCanvas.style.scrollBehavior;
+  if (!smooth) readerCanvas.style.scrollBehavior = 'auto';
+  page.scrollIntoView({ block: 'start' });
+  if (!smooth) requestAnimationFrame(() => readerCanvas.style.scrollBehavior = oldBehavior || '');
+}
+
+/* 键盘 */
+window.addEventListener('keydown', e => {
+  if (e.target.matches('input, textarea')) return;
+  const book = state.books.find(b => b.id === state.currentBookId);
+  if ($('#view-reader').hidden) {
+    if (e.key === '?') showHelp();
+    return;
+  }
+  if (!book) return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') {
+    e.preventDefault();
+    if (state.readMode === 'strip') readerCanvas.scrollBy({ top: window.innerHeight * 0.85, behavior: 'smooth' });
+    else if (state.currentPage < book.pages.length - 1) scrollToPage(state.currentPage + 1);
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') {
+    e.preventDefault();
+    if (state.readMode === 'strip') readerCanvas.scrollBy({ top: -window.innerHeight * 0.85, behavior: 'smooth' });
+    else if (state.currentPage > 0) scrollToPage(state.currentPage - 1);
+  } else if (e.key === 'Home') { e.preventDefault(); scrollToPage(0); }
+  else if (e.key === 'End') { e.preventDefault(); scrollToPage(book.pages.length - 1); }
+  else if (e.key.toLowerCase() === 'f') { toggleFullscreen(); }
+  else if (e.key.toLowerCase() === 'b') { toggleBookmark(); }
+  else if (e.key === 'Escape') { closeBook(); }
+  else if (e.key === '?') { showHelp(); }
+});
+
+/* 全屏 */
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen();
+}
+
+/* 书签 */
+function toggleBookmark() {
+  const book = state.books.find(b => b.id === state.currentBookId);
+  if (!book) return;
+  const idx = state.currentPage;
+  const i = book.bookmarks.indexOf(idx);
+  if (i >= 0) { book.bookmarks.splice(i, 1); toast('已移除书签 · P' + (idx+1)); }
+  else { book.bookmarks.push(idx); toast('已加入书签 · P' + (idx+1)); }
+  save();
+  renderSidePanel();
+}
+
+/* 关闭阅读 */
+function closeBook() {
+  saveProgress();
+  switchView('library');
+  renderLibrary();
+}
+
+/* ============================================================
+ *  侧面板
+ * ============================================================ */
+const sidePanel = $('#side-panel');
+const panelBody = $('#panel-body');
+
+$$('.side-panel .tab').forEach(t => t.onclick = () => {
+  $$('.side-panel .tab').forEach(x => x.classList.toggle('active', x === t));
+  state.sideTab = t.dataset.tab;
+  renderSidePanel();
+});
+
+function renderSidePanel() {
+  const book = state.books.find(b => b.id === state.currentBookId);
+  const tab = state.sideTab;
+  if (tab === 'view') {
+    panelBody.innerHTML = `
+      <div class="mode-switch" id="mode-switch">
+        <button data-mode="strip" class="${state.readMode==='strip'?'active':''}">条漫</button>
+        <button data-mode="page" class="${state.readMode==='page'?'active':''}">单页</button>
+        <button data-mode="dual" class="${state.readMode==='dual'?'active':''}">双页</button>
+      </div>
+      <div class="ctrl-row">
+        <label>缩放 FIT <b id="v-fit">${state.fit}</b></label>
+        <div class="mode-switch">
+          <button data-fit="width" class="${state.fit==='width'?'active':''}">宽</button>
+          <button data-fit="height" class="${state.fit==='height'?'active':''}">高</button>
+          <button data-fit="100" class="${state.fit==='100'?'active':''}">100%</button>
+        </div>
+      </div>
+      ${book ? `
+      <div class="ctrl-row">
+        <label>进度 <b>${Math.round((book.progress||0)*100)}%</b></label>
+        <input type="range" id="s-progress" min="0" max="100" value="${Math.round((book.progress||0)*100)}">
+      </div>
+      <div class="ctrl-row">
+        <label>书签 <b>${book.bookmarks.length}</b></label>
+        <div class="thumb-list">
+          ${book.bookmarks.slice().sort((a,b)=>a-b).slice(0,12).map(bi => {
+            const p = book.pages[bi]; if (!p) return '';
+            const src = p.url || '';
+            return `<div class="thumb" data-jump="${bi}"><img loading="lazy" src="${src}"><span>P${bi+1}</span></div>`;
+          }).join('') || '<div style="grid-column:1/-1;color:var(--mist);font-family:var(--mono);font-size:10px;text-align:center;padding:10px;">按 B 添加</div>'}
+        </div>
+      </div>
+      ` : ''}
+    `;
+    // 异步加载书签缩略图
+    if (book) {
+      $$('.thumb[data-jump]', panelBody).forEach(el => {
+        const bi = +el.dataset.jump;
+        const p = book.pages[bi];
+        if (p && !p.url) {
+          getPageUrl(p.id).then(url => {
+            if (url) { p.url = url; el.querySelector('img').src = url; }
+          });
+        }
+      });
+    }
+    $$('#mode-switch button').forEach(b => b.onclick = () => {
+      state.readMode = b.dataset.mode; applyMode(); save(); renderSidePanel();
+    });
+    $$('[data-fit]').forEach(b => b.onclick = () => {
+      state.fit = b.dataset.fit; applyMode(); save(); renderSidePanel();
+    });
+    $$('[data-jump]').forEach(b => b.onclick = () => scrollToPage(+b.dataset.jump));
+    const sp = $('#s-progress');
+    if (sp) sp.oninput = e => {
+      const v = +e.target.value;
+      book.progress = v / 100;
+      const idx = Math.floor(book.progress * (book.pages.length - 1));
+      scrollToPage(idx, true);
+      save();
+    };
+  } else if (tab === 'filter') {
+    const f = state.filter;
+    panelBody.innerHTML = `
+      <div class="ctrl-row"><label>亮度 <b id="v-b">${f.brightness}</b></label><input type="range" data-k="brightness" min="30" max="180" value="${f.brightness}"></div>
+      <div class="ctrl-row"><label>对比度 <b id="v-c">${f.contrast}</b></label><input type="range" data-k="contrast" min="30" max="180" value="${f.contrast}"></div>
+      <div class="ctrl-row"><label>饱和度 <b id="v-s">${f.saturate}</b></label><input type="range" data-k="saturate" min="0" max="200" value="${f.saturate}"></div>
+      <div class="ctrl-row"><label>色相 <b id="v-h">${f.hue}°</b></label><input type="range" data-k="hue" min="0" max="360" value="${f.hue}"></div>
+      <div class="ctrl-row"><label>反色 <b id="v-i">${f.invert}</b></label><input type="range" data-k="invert" min="0" max="100" value="${f.invert}"></div>
+      <button class="btn" id="reset-filter" style="width:100%;justify-content:center;margin-top:6px;">重置滤镜</button>
+    `;
+    $$('[data-k]').forEach(el => {
+      el.oninput = e => {
+        const k = e.target.dataset.k, v = +e.target.value;
+        state.filter[k] = v;
+        const map = { brightness:'v-b', contrast:'v-c', saturate:'v-s', hue:'v-h', invert:'v-i' };
+        const lab = $('#' + map[k]);
+        if (lab) lab.textContent = k === 'hue' ? v + '°' : v;
+        applyFilterAll();
+        save();
+      };
+    });
+    $('#reset-filter').onclick = () => {
+      state.filter = { brightness:100, contrast:100, saturate:100, hue:0, invert:0 };
+      applyFilterAll(); save(); renderSidePanel();
+    };
+  } else if (tab === 'thumbs') {
+    if (!book) { panelBody.innerHTML = ''; return; }
+    panelBody.innerHTML = `<div class="thumb-list" id="thumb-list"></div>`;
+    const list = $('#thumb-list');
+    book.pages.forEach((p, i) => {
+      const el = document.createElement('div');
+      el.className = 'thumb' + (i === state.currentPage ? ' active' : '');
+      const img = document.createElement('img');
+      img.loading = 'lazy';
+      if (p.url) img.src = p.url;
+      else getPageUrl(p.id).then(url => { if (url) { p.url = url; img.src = url; } });
+      el.appendChild(img);
+      const span = document.createElement('span');
+      span.textContent = i+1;
+      el.appendChild(span);
+      el.onclick = () => {
+        scrollToPage(i);
+        $$('.thumb', list).forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+      };
+      list.appendChild(el);
+    });
+  }
+}
+
+/* ============================================================
+ *  视图切换
+ * ============================================================ */
+function switchView(v) {
+  state.view = v;
+  $('#view-library').hidden = v !== 'library';
+  $('#view-reader').hidden = v !== 'reader';
+  $$('.rail-btn[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+  if (v === 'reader') {
+    $('#reader-toolbar').classList.add('show');
+    setTimeout(() => $('#reader-toolbar').classList.remove('show'), 1800);
+  }
+}
+
+$$('.rail-btn[data-view]').forEach(b => b.onclick = () => {
+  const v = b.dataset.view;
+  if (v === 'recent') {
+    const recent = [...state.books].filter(x => x.lastRead).sort((a,b) => b.lastRead - a.lastRead)[0];
+    if (recent) openBook(recent.id);
+    else toast('暂无阅读记录');
+    return;
+  }
+  if (v === 'bookmarks') {
+    const list = state.books.filter(x => x.bookmarks && x.bookmarks.length);
+    if (list.length === 0) toast('暂无书签');
+    else {
+      switchView('library');
+      toast(`${list.length} 部漫画含书签`);
+    }
+    return;
+  }
+  if (v === 'library') {
+    if (!$('#view-reader').hidden) closeBook();
+    else { switchView('library'); renderLibrary(); }
+  }
+});
+
+/* ============================================================
+ *  顶栏按钮
+ * ============================================================ */
+$('#btn-back').onclick = closeBook;
+$('#btn-fullscreen').onclick = toggleFullscreen;
+$('#btn-bookmark').onclick = toggleBookmark;
+$('#btn-sidepanel').onclick = () => sidePanel.classList.toggle('open');
+
+$('#btn-clear').onclick = async () => {
+  if (state.books.length === 0) return;
+  if (!confirm('清空所有漫画？（不可恢复）')) return;
+  try {
+    // 清理所有 blob URLs
+    for (const url of state._urlCache.values()) {
+      try { URL.revokeObjectURL(url); } catch(e){}
+    }
+    state._urlCache.clear();
+    // 清空 IDB
+    await IDB.clear();
+    state.books = [];
+    save();
+    renderLibrary();
+    updateMeta();
+    updateStorage();
+    toast('已清空');
+  } catch(e) {
+    toast('清空失败：' + e.message, 3500);
+  }
+};
+
+$('#btn-sort').onclick = e => {
+  const menu = $('#ctx-menu');
+  menu.innerHTML = `
+    <button data-sort="recent">最近阅读<span class="hint">${state.sort==='recent'?'✓':''}</span></button>
+    <button data-sort="added">加入时间<span class="hint">${state.sort==='added'?'✓':''}</span></button>
+    <button data-sort="name">名称 A-Z<span class="hint">${state.sort==='name'?'✓':''}</span></button>
+  `;
+  menu.style.left = Math.min(e.clientX, window.innerWidth - 200) + 'px';
+  menu.style.top = e.clientY + 'px';
+  menu.classList.add('show');
+  $$('[data-sort]', menu).forEach(b => b.onclick = () => {
+    state.sort = b.dataset.sort; save(); renderLibrary();
+    menu.classList.remove('show');
+  });
+};
+document.addEventListener('click', e => {
+  if (!e.target.closest('#ctx-menu') && !e.target.closest('#btn-sort')) $('#ctx-menu').classList.remove('show');
+});
+
+/* 书籍右键菜单 */
+function showBookMenu(e, book) {
+  const menu = $('#ctx-menu');
+  menu.innerHTML = `
+    <button data-act="open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 3h11l4 4v14H5z"/><path d="M16 3v4h4"/></svg>继续阅读</button>
+    <button data-act="start"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4v16l7-4 7 4V4z"/></svg>从头开始</button>
+    <hr>
+    <button data-act="rename"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20h4l10-10-4-4L4 16z"/></svg>重命名</button>
+    <button data-act="cover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14"/><circle cx="9" cy="11" r="2"/><path d="M21 19l-6-6-8 6"/></svg>更换封面（当前 P${(book.coverIdx||0)+1}）</button>
+    <hr>
+    <button data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>删除</button>
+  `;
+  menu.style.left = Math.min(e.clientX, window.innerWidth - 200) + 'px';
+  menu.style.top  = Math.min(e.clientY, window.innerHeight - 260) + 'px';
+  menu.classList.add('show');
+  $$('[data-act]', menu).forEach(b => b.onclick = async () => {
+    const act = b.dataset.act;
+    menu.classList.remove('show');
+    try {
+      if (act === 'open') openBook(book.id);
+      if (act === 'start') { book.progress = 0; openBook(book.id, 0); }
+      if (act === 'rename') {
+        const n = prompt('重命名', book.name);
+        if (n) { book.name = n; save(); renderLibrary(); }
+      }
+      if (act === 'cover') {
+        const n = prompt(`设置封面页（1-${book.pages.length}）`, (book.coverIdx||0) + 1);
+        const idx = parseInt(n) - 1;
+        if (!isNaN(idx) && idx >= 0 && idx < book.pages.length) { book.coverIdx = idx; save(); renderLibrary(); }
+      }
+      if (act === 'del') {
+        if (!confirm(`删除《${book.name}》？`)) return;
+        // 清理 IDB blobs
+        const keys = book.pages.map(p => p.id);
+        await IDB.deleteMany(keys);
+        // 清理内存 URL
+        for (const p of book.pages) {
+          const url = state._urlCache.get(p.id);
+          if (url) { try { URL.revokeObjectURL(url); } catch(e){} state._urlCache.delete(p.id); }
+        }
+        state.books = state.books.filter(x => x !== book);
+        save(); renderLibrary(); updateMeta(); updateStorage();
+        toast('已删除');
+      }
+    } catch(err) {
+      toast('操作失败：' + err.message, 3000);
+    }
+  });
+}
+
+/* ============================================================
+ *  快捷键帮助
+ * ============================================================ */
+function showHelp() {
+  const m = $('#ctx-menu');
+  m.innerHTML = `
+    <div style="padding:12px 14px 4px;font-family:var(--display);font-style:italic;font-size:14px;color:var(--paper);">Shortcuts<em style="font-style:normal;color:var(--cinnabar-glow);font-family:var(--serif-cn);font-weight:900;margin:0 6px;">捷径</em></div>
+    <div style="padding:10px 14px 14px;" class="shortcuts">
+      <span class="desc">下翻</span><span class="k">↓ / Space</span>
+      <span class="desc">上翻</span><span class="k">↑</span>
+      <span class="desc">首页</span><span class="k">Home</span>
+      <span class="desc">末页</span><span class="k">End</span>
+      <span class="desc">书签</span><span class="k">B</span>
+      <span class="desc">全屏</span><span class="k">F</span>
+      <span class="desc">返回</span><span class="k">Esc</span>
+      <span class="desc">帮助</span><span class="k">?</span>
+    </div>
+  `;
+  m.style.left = '50%'; m.style.top = '50%';
+  m.style.transform = 'translate(-50%, -50%)';
+  m.classList.add('show');
+  setTimeout(() => m.style.transform = '', 0);
+}
+$('#btn-help').onclick = showHelp;
+
+/* ============================================================
+ *  初始化
+ * ============================================================ */
+(async function init() {
+  try {
+    await IDB.open();
+  } catch(e) {
+    console.error('IDB open failed', e);
+    toast('存储初始化失败：' + e.message, 4000);
+  }
+  loadMeta();
+  // 异步恢复 blobs
+  restoreBlobs().then(() => {
+    renderLibrary();
+    updateMeta();
+    updateStorage();
+  });
+  // 立即渲染骨架
+  switchView('library');
+  renderLibrary();
+  updateMeta();
+
+  setTimeout(() => {
+    if (state.books.length === 0) toast('拖入图片 / 文件夹以开始', 3500);
+  }, 500);
+})();
+
+// 页面关闭前保存
+window.addEventListener('beforeunload', saveProgress);
+
+</script>
+</body>
+</html>
